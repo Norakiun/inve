@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📦 Inventario Almacén - Demo</title>
+<style>
+  :root{ --bg:#111214; --card:#1a1c1f; --border:#2a2c30; --txt:#e8e8e8; --dim:#9aa0a6; --lime:#CCFF00; }
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Arial,sans-serif}
+  body{background:var(--bg);color:var(--txt);max-width:600px;margin:0 auto;padding:16px}
+  h1{font-size:1.3rem;margin-bottom:4px}
+  .sub{color:var(--dim);font-size:.8rem;margin-bottom:14px}
+  .tabs{display:flex;gap:6px;margin-bottom:14px}
+  .tab{flex:1;padding:10px;border:1px solid var(--border);background:var(--card);color:var(--dim);border-radius:8px;cursor:pointer;font-size:.85rem;text-align:center}
+  .tab.active{color:#000;background:var(--lime);border-color:var(--lime);font-weight:bold}
+  .panel{display:none}
+  .panel.active{display:block}
+  .search{width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--txt);font-size:.95rem;margin-bottom:12px}
+  .item{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px}
+  .item .code{color:var(--lime);font-size:.75rem;font-weight:bold}
+  .item .desc{font-size:.9rem;margin:4px 0}
+  .item .meta{color:var(--dim);font-size:.75rem;display:flex;justify-content:space-between;margin-bottom:8px}
+  .stock{font-size:1.1rem;font-weight:bold}
+  .btns{display:flex;gap:8px}
+  .btn{flex:1;padding:10px;border:none;border-radius:8px;font-size:.85rem;font-weight:bold;cursor:pointer}
+  .btn-out{background:#ff5555;color:#fff}
+  .btn-in{background:var(--lime);color:#000}
+  .btn-add{background:var(--card);color:var(--lime);border:1px solid var(--lime);width:100%;padding:14px;border-radius:10px;font-size:.95rem;font-weight:bold;cursor:pointer;margin-top:6px}
+  input,select{width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--txt);margin-bottom:10px;font-size:.95rem}
+  label{font-size:.8rem;color:var(--dim);display:block;margin-bottom:4px}
+  table{width:100%;border-collapse:collapse;font-size:.75rem}
+  th,td{padding:8px 6px;border-bottom:1px solid var(--border);text-align:left}
+  th{color:var(--dim)}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;padding:20px;z-index:10}
+  .modal.open{display:flex}
+  .modal-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;width:100%;max-width:400px}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--lime);color:#000;padding:12px 20px;border-radius:10px;font-weight:bold;font-size:.85rem;display:none;z-index:20}
+  .export-row{display:flex;gap:8px;margin-top:14px}
+  .export-row .btn{background:var(--card);color:var(--txt);border:1px solid var(--border)}
+</style>
+<base target="_blank">
+</head>
+<body>
+
+<h1>📦 Inventario Almacén</h1>
+<div class="sub">Demo QR · v0.1 · datos guardados en este dispositivo</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('inv',this)">Inventario</div>
+  <div class="tab" onclick="clickTabMov(event)">Movimientos</div>
+  <div class="tab" onclick="showTab('new',this)">+ Nuevo Item</div>
+</div>
+
+<!-- INVENTARIO -->
+<div class="panel active" id="p-inv">
+  <input class="search" id="search" placeholder="🔍 Buscar por código o descripción..." oninput="render()">
+  <div id="list"></div>
+  <button class="btn-add" onclick="showTab('new',document.querySelectorAll('.tab')[2])">➕ Registrar nuevo item</button>
+</div>
+
+<!-- MOVIMIENTOS -->
+<div class="panel" id="p-mov">
+  <table>
+    <thead><tr><th>Fecha</th><th>Item</th><th>Tipo</th><th>Cant</th><th>Quién</th></tr></thead>
+    <tbody id="movs"></tbody>
+  </table>
+  <div class="export-row">
+    <button class="btn" onclick="exportData()">⬇ Exportar respaldo</button>
+    <button class="btn" onclick="document.getElementById('importFile').click()">⬆ Importar Excel/JSON</button>
+  </div>
+  <input type="file" id="importFile" accept=".json,.csv" style="display:none" onchange="importData(event)">
+</div>
+
+<!-- NUEVO ITEM -->
+<div class="panel" id="p-new">
+  <label>Código (tal cual proveedor)</label>
+  <input id="n-code" placeholder="Ej: CZ09602061">
+  <label>Descripción completa</label>
+  <input id="n-desc" placeholder="Ej: VENTOSA FUELLE D.80 SAB80NBR_60G38_IG">
+  <label>Ubicación</label>
+  <input id="n-loc" placeholder="Ej: G02-04/TAV1">
+  <label>Unidad de medida</label>
+  <select id="n-um"><option>UND</option><option>KG</option><option>LTS</option><option>MTS</option></select>
+  <label>Cantidad inicial</label>
+  <input id="n-qty" type="number" value="0" min="0">
+  <button class="btn-in btn" style="width:100%" onclick="addItem()">💾 Guardar item</button>
+</div>
+
+<!-- MODAL RETIRO/INGRESO -->
+<div class="modal" id="modal">
+  <div class="modal-card">
+    <div class="code" id="m-code" style="color:var(--lime);font-size:.8rem;font-weight:bold"></div>
+    <div id="m-desc" style="font-size:.9rem;margin:6px 0"></div>
+    <div id="m-stock" style="color:var(--dim);font-size:.8rem;margin-bottom:12px"></div>
+    <label>Cantidad</label>
+    <input id="m-qty" type="number" min="1" value="1">
+    <label>Nombre de quien retira / ingresa</label>
+    <input id="m-who" placeholder="Ej: Juan Pérez">
+    <div class="btns">
+      <button class="btn" style="background:var(--border);color:var(--txt)" onclick="closeModal()">Cancelar</button>
+      <button class="btn" id="m-confirm" onclick="confirmMov()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const DB_KEY='inv_almacen_v1';
+let db=JSON.parse(localStorage.getItem(DB_KEY)||'null')||{
+  items:[
+    {code:'CZ09602061',desc:'VENTOSA FUELLE D.80 SAB80NBR_60G38_IG',loc:'G02-04/TAV1',um:'UND',qty:15},
+    {code:'70050981',desc:'VENTOSA FUELLE SAOB80X40NBR_60 TAVIL',loc:'G02-04/TAV1',um:'UND',qty:15},
+    {code:'CZ09500589',desc:'VENTOSA EXTERIOR 610322',loc:'G02-04/TAV2',um:'UND',qty:10},
+    {code:'CZ09601487',desc:'VENTOSA PINZAS ARAÑA VF-D45-CN',loc:'G02-05',um:'UND',qty:20},
+    {code:'70113180',desc:'VENTOSA OVALA 60X30 SAOB60X30NBR60 TAVIL',loc:'G02-05/TAV',um:'UND',qty:25},
+  ],
+  movs:[]
+};
+let movType=null, movItem=null;
+const save=()=>localStorage.setItem(DB_KEY,JSON.stringify(db));
+
+function showTab(id,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  if(el)el.classList.add('active');
+  document.getElementById('p-'+id).classList.add('active');
+  if(id==='inv')render();
+}
+function clickTabMov(e){showTab('mov',e.target);renderMovs();}
+
+function render(){
+  const q=document.getElementById('search').value.toLowerCase();
+  const list=document.getElementById('list');
+  list.innerHTML='';
+  db.items.filter(i=>i.code.toLowerCase().includes(q)||i.desc.toLowerCase().includes(q)).forEach(i=>{
+    const d=document.createElement('div');d.className='item';
+    d.innerHTML=`<div class="code">${i.code}</div>
+      <div class="desc">${i.desc}</div>
+      <div class="meta"><span>📍 ${i.loc} · ${i.um}</span><span class="stock">Stock: ${i.qty}</span></div>
+      <div class="btns">
+        <button class="btn btn-out" onclick="openModal('RETIRO','${i.code}')">− Retirar</button>
+        <button class="btn btn-in" onclick="openModal('INGRESO','${i.code}')">+ Ingresar</button>
+      </div>`;
+    list.appendChild(d);
+  });
+  if(!list.children.length)list.innerHTML='<div style="color:var(--dim);text-align:center;padding:20px">Sin resultados</div>';
+}
+
+function openModal(type,code){
+  movType=type;movItem=db.items.find(i=>i.code===code);
+  document.getElementById('m-code').textContent=code;
+  document.getElementById('m-desc').textContent=movItem.desc;
+  document.getElementById('m-stock').textContent='Stock actual: '+movItem.qty+' '+movItem.um;
+  const btn=document.getElementById('m-confirm');
+  btn.textContent='Confirmar '+(type==='RETIRO'?'retiro ➖':'ingreso ➕');
+  btn.className='btn '+(type==='RETIRO'?'btn-out':'btn-in');
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal(){document.getElementById('modal').classList.remove('open');}
+
+function confirmMov(){
+  const qty=parseInt(document.getElementById('m-qty').value);
+  const who=document.getElementById('m-who').value.trim();
+  if(!qty||qty<1)return toast('⚠️ Cantidad inválida');
+  if(!who)return toast('⚠️ Escribe quién retira/ingresa');
+  if(movType==='RETIRO'&&qty>movItem.qty)return toast('⚠️ Stock insuficiente (máx '+movItem.qty+')');
+  movItem.qty+=movType==='RETIRO'?-qty:qty;
+  db.movs.unshift({date:new Date().toLocaleString(),code:movItem.code,type:movType,qty,who});
+  save();closeModal();
+  toast('✅ '+movType+' registrado: '+qty+' × '+movItem.code);
+  render();
+}
+
+function addItem(){
+  const code=document.getElementById('n-code').value.trim();
+  const desc=document.getElementById('n-desc').value.trim();
+  const loc=document.getElementById('n-loc').value.trim();
+  const um=document.getElementById('n-um').value;
+  const qty=parseInt(document.getElementById('n-qty').value)||0;
+  if(!code||!desc||!loc)return toast('⚠️ Completa código, descripción y ubicación');
+  if(db.items.some(i=>i.code===code&&i.loc===loc))return toast('⚠️ Ese código ya existe en esa ubicación');
+  db.items.push({code,desc,loc,um,qty});
+  if(qty>0)db.movs.unshift({date:new Date().toLocaleString(),code,type:'INGRESO',qty,who:'Registro inicial'});
+  save();toast('✅ Item registrado');
+  ['n-code','n-desc','n-loc'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('n-qty').value=0;
+  showTab('inv',document.querySelector('.tab'));
+}
+
+function renderMovs(){
+  const t=document.getElementById('movs');t.innerHTML='';
+  if(!db.movs.length)t.innerHTML='<tr><td colspan="5" style="color:var(--dim);text-align:center">Sin movimientos aún</td></tr>';
+  db.movs.forEach(m=>{
+    t.innerHTML+=`<tr><td>${m.date}</td><td>${m.code}</td>
+      <td style="color:${m.type==='RETIRO'?'#ff5555':'var(--lime)'}">${m.type}</td>
+      <td>${m.type==='RETIRO'?'−':'+'}${m.qty}</td><td>${m.who}</td></tr>`;
+  });
+}
+
+function exportData(){
+  const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='respaldo_inventario.json';a.click();toast('⬇ Respaldo descargado');
+}
+function importData(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{db=JSON.parse(ev.target.result);save();toast('✅ Datos importados');render();}
+    catch{toast('⚠️ Archivo no válido')}
+  };
+  r.readAsText(f);
+}
+
+function toast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';
+  setTimeout(()=>t.style.display='none',2500);
+}
+render();
+</script>
+</body>
+</html>
