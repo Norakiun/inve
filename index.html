@@ -1,283 +1,400 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+>
 
 <title>📦 Inventario Almacén - Demo</title>
 
-<!-- Librería SheetJS para crear archivos Excel -->
+
+<!-- =====================================================
+     LIBRERÍA PARA CREAR ARCHIVOS EXCEL
+===================================================== -->
+
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 
+
 <style>
-  :root{
-    --bg:#111214;
-    --card:#1a1c1f;
-    --border:#2a2c30;
-    --txt:#e8e8e8;
-    --dim:#9aa0a6;
-    --lime:#CCFF00;
-  }
 
-  *{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:'Segoe UI',Arial,sans-serif
-  }
+:root{
+  --bg:#111214;
+  --card:#1a1c1f;
+  --border:#2a2c30;
+  --txt:#e8e8e8;
+  --dim:#9aa0a6;
+  --lime:#CCFF00;
+}
 
-  body{
-    background:var(--bg);
-    color:var(--txt);
-    max-width:600px;
-    margin:0 auto;
-    padding:16px
-  }
 
-  h1{
-    font-size:1.3rem;
-    margin-bottom:4px
-  }
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:'Segoe UI',Arial,sans-serif;
+}
 
-  .sub{
-    color:var(--dim);
-    font-size:.8rem;
-    margin-bottom:14px
-  }
 
-  .tabs{
-    display:flex;
-    gap:6px;
-    margin-bottom:14px
-  }
+body{
+  background:var(--bg);
+  color:var(--txt);
+  max-width:600px;
+  margin:0 auto;
+  padding:16px;
+}
 
-  .tab{
-    flex:1;
-    padding:10px;
-    border:1px solid var(--border);
-    background:var(--card);
-    color:var(--dim);
-    border-radius:8px;
-    cursor:pointer;
-    font-size:.85rem;
-    text-align:center
-  }
 
-  .tab.active{
-    color:#000;
-    background:var(--lime);
-    border-color:var(--lime);
-    font-weight:bold
-  }
+h1{
+  font-size:1.3rem;
+  margin-bottom:4px;
+}
 
-  .panel{
-    display:none
-  }
 
-  .panel.active{
-    display:block
-  }
+.sub{
+  color:var(--dim);
+  font-size:.8rem;
+  margin-bottom:14px;
+}
 
-  .search{
-    width:100%;
-    padding:12px;
-    border:1px solid var(--border);
-    border-radius:8px;
-    background:var(--card);
-    color:var(--txt);
-    font-size:.95rem;
-    margin-bottom:12px
-  }
 
-  .item{
-    background:var(--card);
-    border:1px solid var(--border);
-    border-radius:10px;
-    padding:12px;
-    margin-bottom:10px
-  }
+/* =====================================================
+   PESTAÑAS
+===================================================== */
 
-  .item .code{
-    color:var(--lime);
-    font-size:.75rem;
-    font-weight:bold
-  }
+.tabs{
+  display:flex;
+  gap:6px;
+  margin-bottom:14px;
+}
 
-  .item .desc{
-    font-size:.9rem;
-    margin:4px 0
-  }
 
-  .item .meta{
-    color:var(--dim);
-    font-size:.75rem;
-    display:flex;
-    justify-content:space-between;
-    margin-bottom:8px
-  }
+.tab{
+  flex:1;
+  padding:10px;
+  border:1px solid var(--border);
+  background:var(--card);
+  color:var(--dim);
+  border-radius:8px;
+  cursor:pointer;
+  font-size:.85rem;
+  text-align:center;
+}
 
-  .stock{
-    font-size:1.1rem;
-    font-weight:bold
-  }
 
-  .btns{
-    display:flex;
-    gap:8px
-  }
+.tab.active{
+  color:#000;
+  background:var(--lime);
+  border-color:var(--lime);
+  font-weight:bold;
+}
 
-  .btn{
-    flex:1;
-    padding:10px;
-    border:none;
-    border-radius:8px;
-    font-size:.85rem;
-    font-weight:bold;
-    cursor:pointer
-  }
 
-  .btn-out{
-    background:#ff5555;
-    color:#fff
-  }
+/* =====================================================
+   PANELES
+===================================================== */
 
-  .btn-in{
-    background:var(--lime);
-    color:#000
-  }
+.panel{
+  display:none;
+}
 
-  .btn-add{
-    background:var(--card);
-    color:var(--lime);
-    border:1px solid var(--lime);
-    width:100%;
-    padding:14px;
-    border-radius:10px;
-    font-size:.95rem;
-    font-weight:bold;
-    cursor:pointer;
-    margin-top:6px
-  }
 
-  input,select{
-    width:100%;
-    padding:12px;
-    border:1px solid var(--border);
-    border-radius:8px;
-    background:var(--card);
-    color:var(--txt);
-    margin-bottom:10px;
-    font-size:.95rem
-  }
+.panel.active{
+  display:block;
+}
 
-  label{
-    font-size:.8rem;
-    color:var(--dim);
-    display:block;
-    margin-bottom:4px
-  }
 
-  table{
-    width:100%;
-    border-collapse:collapse;
-    font-size:.75rem
-  }
+/* =====================================================
+   BUSCADOR
+===================================================== */
 
-  th,td{
-    padding:8px 6px;
-    border-bottom:1px solid var(--border);
-    text-align:left
-  }
+.search{
+  width:100%;
+  padding:12px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:var(--card);
+  color:var(--txt);
+  font-size:.95rem;
+  margin-bottom:12px;
+}
 
-  th{
-    color:var(--dim)
-  }
 
-  .modal{
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.8);
-    display:none;
-    align-items:center;
-    justify-content:center;
-    padding:20px;
-    z-index:10
-  }
+/* =====================================================
+   ITEMS
+===================================================== */
 
-  .modal.open{
-    display:flex
-  }
+.item{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:12px;
+  margin-bottom:10px;
+}
 
-  .modal-card{
-    background:var(--card);
-    border:1px solid var(--border);
-    border-radius:14px;
-    padding:20px;
-    width:100%;
-    max-width:400px
-  }
 
-  .toast{
-    position:fixed;
-    bottom:20px;
-    left:50%;
-    transform:translateX(-50%);
-    background:var(--lime);
-    color:#000;
-    padding:12px 20px;
-    border-radius:10px;
-    font-weight:bold;
-    font-size:.85rem;
-    display:none;
-    z-index:20
-  }
+.item .code{
+  color:var(--lime);
+  font-size:.75rem;
+  font-weight:bold;
+}
 
-  .export-row{
-    display:flex;
-    gap:8px;
-    margin-top:14px
-  }
 
-  .export-row .btn{
-    background:var(--card);
-    color:var(--txt);
-    border:1px solid var(--border)
-  }
+.item .desc{
+  font-size:.9rem;
+  margin:4px 0;
+}
+
+
+.item .meta{
+  color:var(--dim);
+  font-size:.75rem;
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:8px;
+}
+
+
+.stock{
+  font-size:1.1rem;
+  font-weight:bold;
+}
+
+
+/* =====================================================
+   BOTONES
+===================================================== */
+
+.btns{
+  display:flex;
+  gap:8px;
+}
+
+
+.btn{
+  flex:1;
+  padding:10px;
+  border:none;
+  border-radius:8px;
+  font-size:.85rem;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+
+.btn-out{
+  background:#ff5555;
+  color:#fff;
+}
+
+
+.btn-in{
+  background:var(--lime);
+  color:#000;
+}
+
+
+.btn-add{
+  background:var(--card);
+  color:var(--lime);
+  border:1px solid var(--lime);
+  width:100%;
+  padding:14px;
+  border-radius:10px;
+  font-size:.95rem;
+  font-weight:bold;
+  cursor:pointer;
+  margin-top:6px;
+}
+
+
+/* =====================================================
+   INPUTS
+===================================================== */
+
+input,
+select{
+  width:100%;
+  padding:12px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:var(--card);
+  color:var(--txt);
+  margin-bottom:10px;
+  font-size:.95rem;
+}
+
+
+label{
+  font-size:.8rem;
+  color:var(--dim);
+  display:block;
+  margin-bottom:4px;
+}
+
+
+/* =====================================================
+   TABLA MOVIMIENTOS
+===================================================== */
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:.75rem;
+}
+
+
+th,
+td{
+  padding:8px 6px;
+  border-bottom:1px solid var(--border);
+  text-align:left;
+}
+
+
+th{
+  color:var(--dim);
+}
+
+
+/* =====================================================
+   MODAL
+===================================================== */
+
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.8);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  z-index:10;
+}
+
+
+.modal.open{
+  display:flex;
+}
+
+
+.modal-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:20px;
+  width:100%;
+  max-width:400px;
+}
+
+
+/* =====================================================
+   TOAST
+===================================================== */
+
+.toast{
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:var(--lime);
+  color:#000;
+  padding:12px 20px;
+  border-radius:10px;
+  font-weight:bold;
+  font-size:.85rem;
+  display:none;
+  z-index:20;
+}
+
+
+/* =====================================================
+   EXPORTAR
+===================================================== */
+
+.export-row{
+  display:flex;
+  gap:8px;
+  margin-top:14px;
+}
+
+
+.export-row .btn{
+  background:var(--card);
+  color:var(--txt);
+  border:1px solid var(--border);
+  width:100%;
+}
+
 </style>
 
-<base target="_blank">
 </head>
+
 
 <body>
 
-<h1>📦 Inventario Almacén</h1>
+
+<!-- =====================================================
+     ENCABEZADO
+===================================================== -->
+
+<h1>
+  📦 Inventario Almacén
+</h1>
+
 
 <div class="sub">
   Demo QR · v0.1 · datos guardados en este dispositivo
 </div>
 
+
+<!-- =====================================================
+     PESTAÑAS
+===================================================== -->
+
 <div class="tabs">
 
-  <div class="tab active" onclick="showTab('inv',this)">
+
+  <div
+    class="tab active"
+    onclick="showTab('inv',this)"
+  >
     Inventario
   </div>
 
-  <div class="tab" onclick="clickTabMov(event)">
+
+  <div
+    class="tab"
+    onclick="clickTabMov(event)"
+  >
     Movimientos
   </div>
 
-  <div class="tab" onclick="showTab('new',this)">
+
+  <div
+    class="tab"
+    onclick="showTab('new',this)"
+  >
     + Nuevo Item
   </div>
+
 
 </div>
 
 
-<!-- =========================================================
+<!-- =====================================================
      INVENTARIO
-========================================================= -->
+===================================================== -->
 
-<div class="panel active" id="p-inv">
+<div
+  class="panel active"
+  id="p-inv"
+>
+
 
   <input
     class="search"
@@ -286,44 +403,76 @@
     oninput="render()"
   >
 
+
   <div id="list"></div>
+
 
   <button
     class="btn-add"
-    onclick="showTab('new',document.querySelectorAll('.tab')[2])"
+    onclick="showTab(
+      'new',
+      document.querySelectorAll('.tab')[2]
+    )"
   >
     ➕ Registrar nuevo item
   </button>
 
+
 </div>
 
 
-<!-- =========================================================
+<!-- =====================================================
      MOVIMIENTOS
-========================================================= -->
+===================================================== -->
 
-<div class="panel" id="p-mov">
+<div
+  class="panel"
+  id="p-mov"
+>
+
 
   <table>
 
+
     <thead>
+
       <tr>
-        <th>Fecha</th>
-        <th>Item</th>
-        <th>Tipo</th>
-        <th>Cant</th>
-        <th>Quién</th>
+
+        <th>
+          Fecha
+        </th>
+
+        <th>
+          Item
+        </th>
+
+        <th>
+          Tipo
+        </th>
+
+        <th>
+          Cant
+        </th>
+
+        <th>
+          Quién
+        </th>
+
       </tr>
+
     </thead>
 
+
     <tbody id="movs"></tbody>
+
 
   </table>
 
 
+  <!-- SOLO EXPORTAR EXCEL -->
+
   <div class="export-row">
 
-    <!-- EXPORTAR EXCEL -->
     <button
       class="btn"
       onclick="exportData()"
@@ -331,36 +480,26 @@
       ⬇ Exportar Excel
     </button>
 
-
-    <!-- IMPORTAR JSON -->
-    <button
-      class="btn"
-      onclick="document.getElementById('importFile').click()"
-    >
-      ⬆ Importar respaldo
-    </button>
-
   </div>
 
-
-  <input
-    type="file"
-    id="importFile"
-    accept=".json"
-    style="display:none"
-    onchange="importData(event)"
-  >
 
 </div>
 
 
-<!-- =========================================================
+<!-- =====================================================
      NUEVO ITEM
-========================================================= -->
+===================================================== -->
 
-<div class="panel" id="p-new">
+<div
+  class="panel"
+  id="p-new"
+>
 
-  <label>Código (tal cual proveedor)</label>
+
+  <label>
+    Código (tal cual proveedor)
+  </label>
+
 
   <input
     id="n-code"
@@ -368,7 +507,10 @@
   >
 
 
-  <label>Descripción completa</label>
+  <label>
+    Descripción completa
+  </label>
+
 
   <input
     id="n-desc"
@@ -376,7 +518,10 @@
   >
 
 
-  <label>Ubicación</label>
+  <label>
+    Ubicación
+  </label>
+
 
   <input
     id="n-loc"
@@ -384,17 +529,25 @@
   >
 
 
-  <label>Unidad de medida</label>
+  <label>
+    Unidad de medida
+  </label>
+
 
   <select id="n-um">
+
     <option>UND</option>
     <option>KG</option>
     <option>LTS</option>
     <option>MTS</option>
+
   </select>
 
 
-  <label>Cantidad inicial</label>
+  <label>
+    Cantidad inicial
+  </label>
+
 
   <input
     id="n-qty"
@@ -412,16 +565,22 @@
     💾 Guardar item
   </button>
 
+
 </div>
 
 
-<!-- =========================================================
+<!-- =====================================================
      MODAL RETIRO / INGRESO
-========================================================= -->
+===================================================== -->
 
-<div class="modal" id="modal">
+<div
+  class="modal"
+  id="modal"
+>
+
 
   <div class="modal-card">
+
 
     <div
       class="code"
@@ -453,7 +612,10 @@
     ></div>
 
 
-    <label>Cantidad</label>
+    <label>
+      Cantidad
+    </label>
+
 
     <input
       id="m-qty"
@@ -467,6 +629,7 @@
       Nombre de quien retira / ingresa
     </label>
 
+
     <input
       id="m-who"
       placeholder="Ej: Juan Pérez"
@@ -474,6 +637,7 @@
 
 
     <div class="btns">
+
 
       <button
         class="btn"
@@ -495,16 +659,18 @@
         Confirmar
       </button>
 
+
     </div>
+
 
   </div>
 
 </div>
 
 
-<!-- =========================================================
+<!-- =====================================================
      TOAST
-========================================================= -->
+===================================================== -->
 
 <div
   class="toast"
@@ -514,18 +680,27 @@
 
 <script>
 
-/* =========================================================
-   BASE DE DATOS LOCAL
-========================================================= */
 
-const DB_KEY = 'inv_almacen_v1';
+/* =====================================================
+   BASE DE DATOS LOCAL
+===================================================== */
+
+const DB_KEY =
+  'inv_almacen_v1';
 
 
 let db =
-  JSON.parse(localStorage.getItem(DB_KEY) || 'null')
+  JSON.parse(
+    localStorage.getItem(DB_KEY)
+    ||
+    'null'
+  )
   ||
   {
-    items: [
+
+
+    items:[
+
 
       {
         code:'CZ09602061',
@@ -535,6 +710,7 @@ let db =
         qty:15
       },
 
+
       {
         code:'70050981',
         desc:'VENTOSA FUELLE SAOB80X40NBR_60 TAVIL',
@@ -542,6 +718,7 @@ let db =
         um:'UND',
         qty:15
       },
+
 
       {
         code:'CZ09500589',
@@ -551,6 +728,7 @@ let db =
         qty:10
       },
 
+
       {
         code:'CZ09601487',
         desc:'VENTOSA PINZAS ARAÑA VF-D45-CN',
@@ -558,6 +736,7 @@ let db =
         um:'UND',
         qty:20
       },
+
 
       {
         code:'70113180',
@@ -567,19 +746,24 @@ let db =
         qty:25
       }
 
+
     ],
 
+
     movs:[]
+
+
   };
 
 
 let movType = null;
+
 let movItem = null;
 
 
-/* =========================================================
+/* =====================================================
    GUARDAR DATOS
-========================================================= */
+===================================================== */
 
 const save = () => {
 
@@ -591,46 +775,55 @@ const save = () => {
 };
 
 
-/* =========================================================
-   CAMBIO DE PESTAÑAS
-========================================================= */
+/* =====================================================
+   CAMBIAR PESTAÑA
+===================================================== */
 
 function showTab(id,el){
 
+
   document
     .querySelectorAll('.tab')
-    .forEach(t =>
-      t.classList.remove('active')
+    .forEach(
+      t =>
+        t.classList.remove('active')
     );
 
 
   document
     .querySelectorAll('.panel')
-    .forEach(p =>
-      p.classList.remove('active')
+    .forEach(
+      p =>
+        p.classList.remove('active')
     );
 
 
   if(el){
+
     el.classList.add('active');
+
   }
 
 
   document
-    .getElementById('p-'+id)
+    .getElementById(
+      'p-' + id
+    )
     .classList.add('active');
 
 
   if(id === 'inv'){
+
     render();
+
   }
 
 }
 
 
-/* =========================================================
+/* =====================================================
    PESTAÑA MOVIMIENTOS
-========================================================= */
+===================================================== */
 
 function clickTabMov(e){
 
@@ -639,26 +832,32 @@ function clickTabMov(e){
     e.target
   );
 
+
   renderMovs();
 
 }
 
 
-/* =========================================================
+/* =====================================================
    MOSTRAR INVENTARIO
-========================================================= */
+===================================================== */
 
 function render(){
 
+
   const q =
     document
-      .getElementById('search')
+      .getElementById(
+        'search'
+      )
       .value
       .toLowerCase();
 
 
   const list =
-    document.getElementById('list');
+    document.getElementById(
+      'list'
+    );
 
 
   list.innerHTML = '';
@@ -667,6 +866,7 @@ function render(){
   db.items
 
     .filter(i =>
+
       i.code
         .toLowerCase()
         .includes(q)
@@ -676,15 +876,20 @@ function render(){
       i.desc
         .toLowerCase()
         .includes(q)
+
     )
 
     .forEach(i => {
 
+
       const d =
-        document.createElement('div');
+        document.createElement(
+          'div'
+        );
 
 
-      d.className = 'item';
+      d.className =
+        'item';
 
 
       d.innerHTML = `
@@ -709,21 +914,31 @@ function render(){
 
         </div>
 
+
         <div class="btns">
+
 
           <button
             class="btn btn-out"
-            onclick="openModal('RETIRO','${i.code}')"
+            onclick="openModal(
+              'RETIRO',
+              '${i.code}'
+            )"
           >
             − Retirar
           </button>
 
+
           <button
             class="btn btn-in"
-            onclick="openModal('INGRESO','${i.code}')"
+            onclick="openModal(
+              'INGRESO',
+              '${i.code}'
+            )"
           >
             + Ingresar
           </button>
+
 
         </div>
 
@@ -735,9 +950,13 @@ function render(){
     });
 
 
-  if(!list.children.length){
+  if(
+    !list.children.length
+  ){
+
 
     list.innerHTML = `
+
       <div
         style="
           color:var(--dim);
@@ -747,6 +966,7 @@ function render(){
       >
         Sin resultados
       </div>
+
     `;
 
   }
@@ -754,34 +974,47 @@ function render(){
 }
 
 
-/* =========================================================
+/* =====================================================
    ABRIR MODAL
-========================================================= */
+===================================================== */
 
-function openModal(type,code){
+function openModal(
+  type,
+  code
+){
 
-  movType = type;
+
+  movType =
+    type;
 
 
   movItem =
     db.items.find(
-      i => i.code === code
+      i =>
+        i.code === code
     );
 
 
   document
-    .getElementById('m-code')
-    .textContent = code;
+    .getElementById(
+      'm-code'
+    )
+    .textContent =
+      code;
 
 
   document
-    .getElementById('m-desc')
+    .getElementById(
+      'm-desc'
+    )
     .textContent =
       movItem.desc;
 
 
   document
-    .getElementById('m-stock')
+    .getElementById(
+      'm-stock'
+    )
     .textContent =
       'Stock actual: '
       +
@@ -819,58 +1052,78 @@ function openModal(type,code){
 
 
   document
-    .getElementById('m-qty')
-    .value = 1;
+    .getElementById(
+      'm-qty'
+    )
+    .value =
+      1;
 
 
   document
-    .getElementById('m-who')
-    .value = '';
+    .getElementById(
+      'm-who'
+    )
+    .value =
+      '';
 
 
   document
-    .getElementById('modal')
-    .classList.add('open');
+    .getElementById(
+      'modal'
+    )
+    .classList
+    .add('open');
 
 }
 
 
-/* =========================================================
+/* =====================================================
    CERRAR MODAL
-========================================================= */
+===================================================== */
 
 function closeModal(){
 
+
   document
-    .getElementById('modal')
+    .getElementById(
+      'modal'
+    )
     .classList
     .remove('open');
 
 }
 
 
-/* =========================================================
+/* =====================================================
    CONFIRMAR MOVIMIENTO
-========================================================= */
+===================================================== */
 
 function confirmMov(){
+
 
   const qty =
     parseInt(
       document
-        .getElementById('m-qty')
+        .getElementById(
+          'm-qty'
+        )
         .value
     );
 
 
   const who =
     document
-      .getElementById('m-who')
+      .getElementById(
+        'm-who'
+      )
       .value
       .trim();
 
 
-  if(!qty || qty < 1){
+  if(
+    !qty ||
+    qty < 1
+  ){
 
     return toast(
       '⚠️ Cantidad inválida'
@@ -906,6 +1159,7 @@ function confirmMov(){
 
 
   movItem.qty +=
+
     movType === 'RETIRO'
       ? -qty
       : qty;
@@ -934,6 +1188,7 @@ function confirmMov(){
 
   save();
 
+
   closeModal();
 
 
@@ -957,52 +1212,63 @@ function confirmMov(){
 }
 
 
-/* =========================================================
-   AGREGAR NUEVO ITEM
-========================================================= */
+/* =====================================================
+   AGREGAR ITEM
+===================================================== */
 
 function addItem(){
 
+
   const code =
     document
-      .getElementById('n-code')
+      .getElementById(
+        'n-code'
+      )
       .value
       .trim();
 
 
   const desc =
     document
-      .getElementById('n-desc')
+      .getElementById(
+        'n-desc'
+      )
       .value
       .trim();
 
 
   const loc =
     document
-      .getElementById('n-loc')
+      .getElementById(
+        'n-loc'
+      )
       .value
       .trim();
 
 
   const um =
     document
-      .getElementById('n-um')
+      .getElementById(
+        'n-um'
+      )
       .value;
 
 
   const qty =
     parseInt(
       document
-        .getElementById('n-qty')
+        .getElementById(
+          'n-qty'
+        )
         .value
-    ) || 0;
+    )
+    ||
+    0;
 
 
   if(
-    !code
-    ||
-    !desc
-    ||
+    !code ||
+    !desc ||
     !loc
   ){
 
@@ -1076,33 +1342,44 @@ function addItem(){
     'n-desc',
     'n-loc'
   ]
-  .forEach(id => {
+  .forEach(
+    id => {
 
-    document
-      .getElementById(id)
-      .value = '';
+      document
+        .getElementById(
+          id
+        )
+        .value =
+          '';
 
-  });
+    }
+  );
 
 
   document
-    .getElementById('n-qty')
-    .value = 0;
+    .getElementById(
+      'n-qty'
+    )
+    .value =
+      0;
 
 
   showTab(
     'inv',
-    document.querySelector('.tab')
+    document.querySelector(
+      '.tab'
+    )
   );
 
 }
 
 
-/* =========================================================
+/* =====================================================
    MOSTRAR MOVIMIENTOS
-========================================================= */
+===================================================== */
 
 function renderMovs(){
+
 
   const t =
     document.getElementById(
@@ -1113,10 +1390,14 @@ function renderMovs(){
   t.innerHTML = '';
 
 
-  if(!db.movs.length){
+  if(
+    !db.movs.length
+  ){
 
     t.innerHTML = `
+
       <tr>
+
         <td
           colspan="5"
           style="
@@ -1126,7 +1407,9 @@ function renderMovs(){
         >
           Sin movimientos aún
         </td>
+
       </tr>
+
     `;
 
     return;
@@ -1134,108 +1417,107 @@ function renderMovs(){
   }
 
 
-  db.movs.forEach(m => {
+  db.movs.forEach(
+    m => {
 
-    t.innerHTML += `
 
-      <tr>
+      t.innerHTML += `
 
-        <td>
-          ${m.date}
-        </td>
+        <tr>
 
-        <td>
-          ${m.code}
-        </td>
+          <td>
+            ${m.date}
+          </td>
 
-        <td
-          style="
-            color:
+          <td>
+            ${m.code}
+          </td>
+
+          <td
+            style="
+              color:
+              ${
+                m.type === 'RETIRO'
+                  ? '#ff5555'
+                  : 'var(--lime)'
+              }
+            "
+          >
+            ${m.type}
+          </td>
+
+          <td>
+
             ${
               m.type === 'RETIRO'
-                ? '#ff5555'
-                : 'var(--lime)'
-            }
-          "
-        >
-          ${m.type}
-        </td>
+                ? '−'
+                : '+'
+            }${m.qty}
 
-        <td>
-          ${
-            m.type === 'RETIRO'
-              ? '−'
-              : '+'
-          }${m.qty}
-        </td>
+          </td>
 
-        <td>
-          ${m.who}
-        </td>
+          <td>
+            ${m.who}
+          </td>
 
-      </tr>
+        </tr>
 
-    `;
+      `;
 
-  });
+    }
+  );
 
 }
 
 
-/* =========================================================
-   EXPORTAR A EXCEL
-========================================================= */
+/* =====================================================
+   EXPORTAR SOLAMENTE MOVIMIENTOS A EXCEL
+===================================================== */
 
 function exportData(){
 
+
   /*
-    Crear datos de la hoja INVENTARIO
+    Verificar si existen movimientos
   */
 
-  const inventario =
-    db.items.map(i => ({
+  if(
+    !db.movs.length
+  ){
 
-      'Código':
-        i.code,
+    return toast(
+      '⚠️ No hay movimientos para exportar'
+    );
 
-      'Descripción':
-        i.desc,
-
-      'Ubicación':
-        i.loc,
-
-      'Unidad':
-        i.um,
-
-      'Stock':
-        i.qty
-
-    }));
+  }
 
 
   /*
-    Crear datos de la hoja MOVIMIENTOS
+    Convertir movimientos
+    al formato de Excel
   */
 
   const movimientos =
-    db.movs.map(m => ({
+    db.movs.map(
+      m => ({
 
-      'Fecha':
-        m.date,
+        'Fecha':
+          m.date,
 
-      'Código':
-        m.code,
+        'Código':
+          m.code,
 
-      'Tipo':
-        m.type,
+        'Tipo':
+          m.type,
 
-      'Cantidad':
-        m.qty,
+        'Cantidad':
+          m.qty,
 
-      'Quién':
-        m.who
+        'Quién':
+          m.who
 
-    }));
+      })
+    );
 
 
   /*
@@ -1247,207 +1529,154 @@ function exportData(){
 
 
   /*
-    Crear hoja Inventario
+    Crear hoja
+    SOLO MOVIMIENTOS
   */
 
-  const wsInventario =
-    XLSX.utils.json_to_sheet(
-      inventario
-    );
-
-
-  /*
-    Crear hoja Movimientos
-  */
-
-  const wsMovimientos =
+  const ws =
     XLSX.utils.json_to_sheet(
       movimientos
     );
 
 
   /*
-    Ajustar ancho de columnas
+    Ajustar ancho
+    de las columnas
   */
 
-  wsInventario['!cols'] = [
+  ws['!cols'] = [
 
-    { wch: 18 }, // Código
-    { wch: 55 }, // Descripción
-    { wch: 18 }, // Ubicación
-    { wch: 12 }, // Unidad
-    { wch: 12 }  // Stock
+    {
+      wch:22
+    },
 
-  ];
+    {
+      wch:18
+    },
 
+    {
+      wch:15
+    },
 
-  wsMovimientos['!cols'] = [
+    {
+      wch:12
+    },
 
-    { wch: 22 }, // Fecha
-    { wch: 18 }, // Código
-    { wch: 15 }, // Tipo
-    { wch: 12 }, // Cantidad
-    { wch: 25 }  // Quién
-
-  ];
-
-
-  /*
-    Agregar filtros automáticos
-  */
-
-  if(inventario.length > 0){
-
-    wsInventario['!autofilter'] = {
-      ref:
-        'A1:E' +
-        (inventario.length + 1)
-    };
-
-  }
-
-
-  if(movimientos.length > 0){
-
-    wsMovimientos['!autofilter'] = {
-      ref:
-        'A1:E' +
-        (movimientos.length + 1)
-    };
-
-  }
-
-
-  /*
-    Agregar hojas al libro
-  */
-
-  XLSX.utils.book_append_sheet(
-    wb,
-    wsInventario,
-    'Inventario'
-  );
-
-
-  XLSX.utils.book_append_sheet(
-    wb,
-    wsMovimientos,
-    'Movimientos'
-  );
-
-
-  /*
-    Crear nombre con fecha
-  */
-
-  const fecha =
-    new Date()
-      .toISOString()
-      .slice(0,10);
-
-
-  /*
-    Descargar archivo Excel
-  */
-
-  XLSX.writeFile(
-    wb,
-    'inventario_almacen_' + fecha + '.xlsx'
-  );
-
-
-  toast(
-    '⬇ Excel descargado correctamente'
-  );
-
-}
-
-
-/* =========================================================
-   IMPORTAR RESPALDO JSON
-========================================================= */
-
-function importData(e){
-
-  const f =
-    e.target.files[0];
-
-
-  if(!f){
-    return;
-  }
-
-
-  const r =
-    new FileReader();
-
-
-  r.onload = ev => {
-
-    try{
-
-      const datos =
-        JSON.parse(
-          ev.target.result
-        );
-
-
-      /*
-        Validación básica
-      */
-
-      if(
-        !datos
-        ||
-        !Array.isArray(datos.items)
-        ||
-        !Array.isArray(datos.movs)
-      ){
-
-        throw new Error(
-          'Formato incorrecto'
-        );
-
-      }
-
-
-      db = datos;
-
-
-      save();
-
-
-      toast(
-        '✅ Datos importados'
-      );
-
-
-      render();
-
-      renderMovs();
-
-
-    }catch(error){
-
-      toast(
-        '⚠️ Archivo no válido'
-      );
-
+    {
+      wch:25
     }
+
+  ];
+
+
+  /*
+    Activar filtros
+  */
+
+  ws['!autofilter'] = {
+
+    ref:
+      'A1:E'
+      +
+      (
+        movimientos.length + 1
+      )
 
   };
 
 
-  r.readAsText(f);
+  /*
+    Agregar solamente
+    la hoja Movimientos
+  */
+
+  XLSX.utils.book_append_sheet(
+
+    wb,
+
+    ws,
+
+    'Movimientos'
+
+  );
+
+
+  /*
+    Obtener fecha
+  */
+
+  const ahora =
+    new Date();
+
+
+  const fecha =
+    ahora
+      .toISOString()
+      .slice(
+        0,
+        10
+      );
+
+
+  /*
+    Obtener hora
+  */
+
+  const hora =
+    ahora
+      .toTimeString()
+      .slice(
+        0,
+        8
+      )
+      .replace(
+        /:/g,
+        '-'
+      );
+
+
+  /*
+    Nombre del archivo
+  */
+
+  const nombreArchivo =
+    'movimientos_almacen_'
+    +
+    fecha
+    +
+    '_'
+    +
+    hora
+    +
+    '.xlsx';
+
+
+  /*
+    Descargar Excel
+  */
+
+  XLSX.writeFile(
+
+    wb,
+
+    nombreArchivo
+
+  );
+
+
+  toast(
+    '⬇ Movimientos exportados correctamente'
+  );
 
 }
 
 
-/* =========================================================
-   MENSAJES
-========================================================= */
+/* =====================================================
+   MENSAJE TOAST
+===================================================== */
 
 function toast(msg){
+
 
   const t =
     document.getElementById(
@@ -1455,14 +1684,20 @@ function toast(msg){
     );
 
 
-  t.textContent = msg;
+  t.textContent =
+    msg;
 
-  t.style.display = 'block';
+
+  t.style.display =
+    'block';
 
 
   setTimeout(
     () => {
-      t.style.display = 'none';
+
+      t.style.display =
+        'none';
+
     },
     2500
   );
@@ -1470,14 +1705,15 @@ function toast(msg){
 }
 
 
-/* =========================================================
-   INICIAR SISTEMA
-========================================================= */
+/* =====================================================
+   INICIAR APLICACIÓN
+===================================================== */
 
 render();
 
 </script>
 
 </body>
+
 </html>
 
