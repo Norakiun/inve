@@ -1,1719 +1,742 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-
-<meta charset="UTF-8">
-
-<meta
-  name="viewport"
-  content="width=device-width, initial-scale=1.0"
->
-
-<title>📦 Inventario Almacén - Demo</title>
-
-
-<!-- =====================================================
-     LIBRERÍA PARA CREAR ARCHIVOS EXCEL
-===================================================== -->
-
-<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-
-
-<style>
-
-:root{
-  --bg:#111214;
-  --card:#1a1c1f;
-  --border:#2a2c30;
-  --txt:#e8e8e8;
-  --dim:#9aa0a6;
-  --lime:#CCFF00;
-}
-
-
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:'Segoe UI',Arial,sans-serif;
-}
-
-
-body{
-  background:var(--bg);
-  color:var(--txt);
-  max-width:600px;
-  margin:0 auto;
-  padding:16px;
-}
-
-
-h1{
-  font-size:1.3rem;
-  margin-bottom:4px;
-}
-
-
-.sub{
-  color:var(--dim);
-  font-size:.8rem;
-  margin-bottom:14px;
-}
-
-
-/* =====================================================
-   PESTAÑAS
-===================================================== */
-
-.tabs{
-  display:flex;
-  gap:6px;
-  margin-bottom:14px;
-}
-
-
-.tab{
-  flex:1;
-  padding:10px;
-  border:1px solid var(--border);
-  background:var(--card);
-  color:var(--dim);
-  border-radius:8px;
-  cursor:pointer;
-  font-size:.85rem;
-  text-align:center;
-}
-
-
-.tab.active{
-  color:#000;
-  background:var(--lime);
-  border-color:var(--lime);
-  font-weight:bold;
-}
-
-
-/* =====================================================
-   PANELES
-===================================================== */
-
-.panel{
-  display:none;
-}
-
-
-.panel.active{
-  display:block;
-}
-
-
-/* =====================================================
-   BUSCADOR
-===================================================== */
-
-.search{
-  width:100%;
-  padding:12px;
-  border:1px solid var(--border);
-  border-radius:8px;
-  background:var(--card);
-  color:var(--txt);
-  font-size:.95rem;
-  margin-bottom:12px;
-}
-
-
-/* =====================================================
-   ITEMS
-===================================================== */
-
-.item{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:10px;
-  padding:12px;
-  margin-bottom:10px;
-}
-
-
-.item .code{
-  color:var(--lime);
-  font-size:.75rem;
-  font-weight:bold;
-}
-
-
-.item .desc{
-  font-size:.9rem;
-  margin:4px 0;
-}
-
-
-.item .meta{
-  color:var(--dim);
-  font-size:.75rem;
-  display:flex;
-  justify-content:space-between;
-  margin-bottom:8px;
-}
-
-
-.stock{
-  font-size:1.1rem;
-  font-weight:bold;
-}
-
-
-/* =====================================================
-   BOTONES
-===================================================== */
-
-.btns{
-  display:flex;
-  gap:8px;
-}
-
-
-.btn{
-  flex:1;
-  padding:10px;
-  border:none;
-  border-radius:8px;
-  font-size:.85rem;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-
-.btn-out{
-  background:#ff5555;
-  color:#fff;
-}
-
-
-.btn-in{
-  background:var(--lime);
-  color:#000;
-}
-
-
-.btn-add{
-  background:var(--card);
-  color:var(--lime);
-  border:1px solid var(--lime);
-  width:100%;
-  padding:14px;
-  border-radius:10px;
-  font-size:.95rem;
-  font-weight:bold;
-  cursor:pointer;
-  margin-top:6px;
-}
-
-
-/* =====================================================
-   INPUTS
-===================================================== */
-
-input,
-select{
-  width:100%;
-  padding:12px;
-  border:1px solid var(--border);
-  border-radius:8px;
-  background:var(--card);
-  color:var(--txt);
-  margin-bottom:10px;
-  font-size:.95rem;
-}
-
-
-label{
-  font-size:.8rem;
-  color:var(--dim);
-  display:block;
-  margin-bottom:4px;
-}
-
-
-/* =====================================================
-   TABLA MOVIMIENTOS
-===================================================== */
-
-table{
-  width:100%;
-  border-collapse:collapse;
-  font-size:.75rem;
-}
-
-
-th,
-td{
-  padding:8px 6px;
-  border-bottom:1px solid var(--border);
-  text-align:left;
-}
-
-
-th{
-  color:var(--dim);
-}
-
-
-/* =====================================================
-   MODAL
-===================================================== */
-
-.modal{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.8);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  padding:20px;
-  z-index:10;
-}
-
-
-.modal.open{
-  display:flex;
-}
-
-
-.modal-card{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:14px;
-  padding:20px;
-  width:100%;
-  max-width:400px;
-}
-
-
-/* =====================================================
-   TOAST
-===================================================== */
-
-.toast{
-  position:fixed;
-  bottom:20px;
-  left:50%;
-  transform:translateX(-50%);
-  background:var(--lime);
-  color:#000;
-  padding:12px 20px;
-  border-radius:10px;
-  font-weight:bold;
-  font-size:.85rem;
-  display:none;
-  z-index:20;
-}
-
-
-/* =====================================================
-   EXPORTAR
-===================================================== */
-
-.export-row{
-  display:flex;
-  gap:8px;
-  margin-top:14px;
-}
-
-
-.export-row .btn{
-  background:var(--card);
-  color:var(--txt);
-  border:1px solid var(--border);
-  width:100%;
-}
-
-</style>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventario Almacén - Demo</title>
+
+  <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #111214;
+      --card: #1a1c1f;
+      --border: #2a2c30;
+      --txt: #e8e8e8;
+      --dim: #9aa0a6;
+      --lime: #CCFF00;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+
+    body {
+      background: var(--bg);
+      color: var(--txt);
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    h1 { font-size: 1.3rem; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+    h1 i { color: var(--lime); font-size: 1.5rem; }
+
+    .sub {
+      color: var(--dim);
+      font-size: .8rem;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+
+    .tab {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--dim);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: .85rem;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .tab.active { color: #000; background: var(--lime); border-color: var(--lime); font-weight: bold; }
+    .tab.active i { color: #000; }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .search-wrap { position: relative; margin-bottom: 12px; }
+
+    .search-wrap i {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--dim);
+      pointer-events: none;
+    }
+
+    .search {
+      width: 100%;
+      padding: 12px 12px 12px 38px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--card);
+      color: var(--txt);
+      font-size: .95rem;
+    }
+
+    .item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+
+    .item .code { color: var(--lime); font-size: .75rem; font-weight: bold; display: flex; align-items: center; gap: 6px; }
+    .item .desc { font-size: .9rem; margin: 4px 0; }
+
+    .item .meta {
+      color: var(--dim);
+      font-size: .75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .item .meta .loc { display: flex; align-items: center; gap: 4px; }
+
+    .stock { font-size: 1.1rem; font-weight: bold; display: flex; align-items: center; gap: 6px; }
+
+    .btns { display: flex; gap: 8px; }
+
+    .btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      font-size: .85rem;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-out { background: #ff5555; color: #fff; }
+    .btn-in { background: var(--lime); color: #000; }
+
+    .btn-add {
+      background: var(--card);
+      color: var(--lime);
+      border: 1px solid var(--lime);
+      width: 100%;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: .95rem;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--card);
+      color: var(--txt);
+      margin-bottom: 10px;
+      font-size: .95rem;
+    }
+
+    label { font-size: .8rem; color: var(--dim); display: block; margin-bottom: 4px; }
+
+    table { width: 100%; border-collapse: collapse; font-size: .75rem; }
+    th, td { padding: 8px 6px; border-bottom: 1px solid var(--border); text-align: left; }
+    th { color: var(--dim); }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 10;
+    }
+
+    .modal.open { display: flex; }
+
+    .modal-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--lime);
+      color: #000;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-weight: bold;
+      font-size: .85rem;
+      display: none;
+      z-index: 20;
+      align-items: center;
+      gap: 8px;
+      max-width: 90%;
+      text-align: center;
+    }
+
+    .toast.warn { background: #ff5555; color: #fff; }
+
+    .export-row { display: flex; gap: 8px; margin-top: 14px; }
+
+    .export-row .btn {
+      background: var(--card);
+      color: var(--txt);
+      border: 1px solid var(--border);
+      width: 100%;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 30px;
+      color: var(--dim);
+      font-size: .9rem;
+    }
+
+    .loading i {
+      font-size: 2rem;
+      color: var(--lime);
+      animation: spin 1s linear infinite;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+  </style>
 </head>
-
-
 <body>
 
+  <h1>
+    <i class='bx bx-package'></i> Inventario Almacén
+  </h1>
 
-<!-- =====================================================
-     ENCABEZADO
-===================================================== -->
-
-<h1>
-  📦 Inventario Almacén
-</h1>
-
-
-<div class="sub">
-  Demo QR · v0.1 · datos guardados en este dispositivo
-</div>
-
-
-<!-- =====================================================
-     PESTAÑAS
-===================================================== -->
-
-<div class="tabs">
-
-
-  <div
-    class="tab active"
-    onclick="showTab('inv',this)"
-  >
-    Inventario
+  <div class="sub">
+    <i class='bx bx-qr'></i> Demo QR · v0.2 · datos guardados en Google Sheets
   </div>
 
-
-  <div
-    class="tab"
-    onclick="clickTabMov(event)"
-  >
-    Movimientos
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('inv', this)">
+      <i class='bx bx-box'></i> Inventario
+    </div>
+    <div class="tab" onclick="clickTabMov(event)">
+      <i class='bx bx-history'></i> Movimientos
+    </div>
+    <div class="tab" onclick="showTab('new', this)">
+      <i class='bx bx-plus-circle'></i> Nuevo Item
+    </div>
   </div>
 
-
-  <div
-    class="tab"
-    onclick="showTab('new',this)"
-  >
-    + Nuevo Item
-  </div>
-
-
-</div>
-
-
-<!-- =====================================================
-     INVENTARIO
-===================================================== -->
-
-<div
-  class="panel active"
-  id="p-inv"
->
-
-
-  <input
-    class="search"
-    id="search"
-    placeholder="🔍 Buscar por código o descripción..."
-    oninput="render()"
-  >
-
-
-  <div id="list"></div>
-
-
-  <button
-    class="btn-add"
-    onclick="showTab(
-      'new',
-      document.querySelectorAll('.tab')[2]
-    )"
-  >
-    ➕ Registrar nuevo item
-  </button>
-
-
-</div>
-
-
-<!-- =====================================================
-     MOVIMIENTOS
-===================================================== -->
-
-<div
-  class="panel"
-  id="p-mov"
->
-
-
-  <table>
-
-
-    <thead>
-
-      <tr>
-
-        <th>
-          Fecha
-        </th>
-
-        <th>
-          Item
-        </th>
-
-        <th>
-          Tipo
-        </th>
-
-        <th>
-          Cant
-        </th>
-
-        <th>
-          Quién
-        </th>
-
-      </tr>
-
-    </thead>
-
-
-    <tbody id="movs"></tbody>
-
-
-  </table>
-
-
-  <!-- SOLO EXPORTAR EXCEL -->
-
-  <div class="export-row">
-
-    <button
-      class="btn"
-      onclick="exportData()"
-    >
-      ⬇ Exportar Excel
-    </button>
-
-  </div>
-
-
-</div>
-
-
-<!-- =====================================================
-     NUEVO ITEM
-===================================================== -->
-
-<div
-  class="panel"
-  id="p-new"
->
-
-
-  <label>
-    Código (tal cual proveedor)
-  </label>
-
-
-  <input
-    id="n-code"
-    placeholder="Ej: CZ09602061"
-  >
-
-
-  <label>
-    Descripción completa
-  </label>
-
-
-  <input
-    id="n-desc"
-    placeholder="Ej: VENTOSA FUELLE D.80 SAB80NBR_60G38_IG"
-  >
-
-
-  <label>
-    Ubicación
-  </label>
-
-
-  <input
-    id="n-loc"
-    placeholder="Ej: G02-04/TAV1"
-  >
-
-
-  <label>
-    Unidad de medida
-  </label>
-
-
-  <select id="n-um">
-
-    <option>UND</option>
-    <option>KG</option>
-    <option>LTS</option>
-    <option>MTS</option>
-
-  </select>
-
-
-  <label>
-    Cantidad inicial
-  </label>
-
-
-  <input
-    id="n-qty"
-    type="number"
-    value="0"
-    min="0"
-  >
-
-
-  <button
-    class="btn btn-in"
-    style="width:100%"
-    onclick="addItem()"
-  >
-    💾 Guardar item
-  </button>
-
-
-</div>
-
-
-<!-- =====================================================
-     MODAL RETIRO / INGRESO
-===================================================== -->
-
-<div
-  class="modal"
-  id="modal"
->
-
-
-  <div class="modal-card">
-
-
-    <div
-      class="code"
-      id="m-code"
-      style="
-        color:var(--lime);
-        font-size:.8rem;
-        font-weight:bold
-      "
-    ></div>
-
-
-    <div
-      id="m-desc"
-      style="
-        font-size:.9rem;
-        margin:6px 0
-      "
-    ></div>
-
-
-    <div
-      id="m-stock"
-      style="
-        color:var(--dim);
-        font-size:.8rem;
-        margin-bottom:12px
-      "
-    ></div>
-
-
-    <label>
-      Cantidad
-    </label>
-
-
-    <input
-      id="m-qty"
-      type="number"
-      min="1"
-      value="1"
-    >
-
-
-    <label>
-      Nombre de quien retira / ingresa
-    </label>
-
-
-    <input
-      id="m-who"
-      placeholder="Ej: Juan Pérez"
-    >
-
-
-    <div class="btns">
-
-
-      <button
-        class="btn"
-        style="
-          background:var(--border);
-          color:var(--txt)
-        "
-        onclick="closeModal()"
-      >
-        Cancelar
-      </button>
-
-
-      <button
-        class="btn"
-        id="m-confirm"
-        onclick="confirmMov()"
-      >
-        Confirmar
-      </button>
-
-
+  <!-- PANEL INVENTARIO -->
+  <div class="panel active" id="p-inv">
+    <div class="search-wrap">
+      <i class='bx bx-search'></i>
+      <input class="search" id="search" placeholder="Buscar por código o descripción..." oninput="render()">
     </div>
 
+    <div id="list">
+      <div class="loading">
+        <i class='bx bx-loader-circle'></i>
+        Conectando con Google Sheets...
+      </div>
+    </div>
 
+    <button class="btn-add" onclick="showTab('new', document.querySelectorAll('.tab')[2])">
+      <i class='bx bx-plus-circle'></i> Registrar nuevo item
+    </button>
   </div>
 
-</div>
+  <!-- PANEL MOVIMIENTOS -->
+  <div class="panel" id="p-mov">
+    <table>
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Item</th>
+          <th>Tipo</th>
+          <th>Cant</th>
+          <th>Quién</th>
+        </tr>
+      </thead>
+      <tbody id="movs"></tbody>
+    </table>
 
+    <div class="export-row">
+      <button class="btn" onclick="exportData()">
+        <i class='bx bx-download'></i> Exportar Excel
+      </button>
+    </div>
+  </div>
 
-<!-- =====================================================
-     TOAST
-===================================================== -->
+  <!-- PANEL NUEVO ITEM -->
+  <div class="panel" id="p-new">
+    <label>Código (tal cual proveedor)</label>
+    <input id="n-code" placeholder="Ej: CZ09602061">
 
-<div
-  class="toast"
-  id="toast"
-></div>
+    <label>Descripción completa</label>
+    <input id="n-desc" placeholder="Ej: VENTOSA FUELLE D.80 SAB80NBR_60G38_IG">
 
+    <label>Ubicación</label>
+    <input id="n-loc" placeholder="Ej: G02-04/TAV1">
 
-<script>
+    <label>Unidad de medida</label>
+    <select id="n-um">
+      <option>UND</option>
+      <option>KG</option>
+      <option>LTS</option>
+      <option>MTS</option>
+    </select>
 
+    <label>Cantidad inicial</label>
+    <input id="n-qty" type="number" value="0" min="0">
 
-/* =====================================================
-   BASE DE DATOS LOCAL
-===================================================== */
+    <button class="btn btn-in" style="width:100%" onclick="addItem()">
+      <i class='bx bx-save'></i> Guardar item
+    </button>
+  </div>
 
-const DB_KEY =
-  'inv_almacen_v1';
+  <!-- MODAL -->
+  <div class="modal" id="modal">
+    <div class="modal-card">
+      <div class="code" id="m-code" style="color:var(--lime);font-size:.8rem;font-weight:bold"></div>
+      <div id="m-desc" style="font-size:.9rem;margin:6px 0"></div>
+      <div id="m-stock" style="color:var(--dim);font-size:.8rem;margin-bottom:12px;display:flex;align-items:center;gap:6px"></div>
 
+      <label>Cantidad</label>
+      <input id="m-qty" type="number" min="1" value="1">
 
-let db =
-  JSON.parse(
-    localStorage.getItem(DB_KEY)
-    ||
-    'null'
-  )
-  ||
-  {
+      <label>Nombre de quien retira / ingresa</label>
+      <input id="m-who" placeholder="Ej: Juan Pérez">
 
+      <div class="btns">
+        <button class="btn" style="background:var(--border);color:var(--txt)" onclick="closeModal()">
+          <i class='bx bx-x'></i> Cancelar
+        </button>
+        <button class="btn" id="m-confirm" onclick="confirmMov()">Confirmar</button>
+      </div>
+    </div>
+  </div>
 
-    items:[
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
 
+  <script>
+    /* =====================================================
+       URL DEL APPS SCRIPT (ACTUALIZADA)
+    ===================================================== */
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwgoQklqYS5B12naUfzb-6c1ujHrXTojJzlhe5w6qO6tSCWkhAFyrVE0T6Add8N-r2Q/exec';
 
-      {
-        code:'CZ09602061',
-        desc:'VENTOSA FUELLE D.80 SAB80NBR_60G38_IG',
-        loc:'G02-04/TAV1',
-        um:'UND',
-        qty:15
-      },
+    /* =====================================================
+       BASE DE DATOS EN MEMORIA
+    ===================================================== */
+    let db = { items: [], movs: [] };
+    let movType = null;
+    let movItem = null;
 
+    /* =====================================================
+       CONEXIÓN CON GOOGLE SHEETS
+    ===================================================== */
+    async function apiGet(action) {
+      const url = API_URL + '?action=' + encodeURIComponent(action);
+      console.log('GET →', url);
 
-      {
-        code:'70050981',
-        desc:'VENTOSA FUELLE SAOB80X40NBR_60 TAVIL',
-        loc:'G02-04/TAV1',
-        um:'UND',
-        qty:15
-      },
+      const response = await fetch(url, {
+        method: 'GET',
+        cache: 'no-store',
+        redirect: 'follow'
+      });
 
+      const text = await response.text();
+      console.log('Respuesta cruda (primeros 300 chars):', text.substring(0, 300));
 
-      {
-        code:'CZ09500589',
-        desc:'VENTOSA EXTERIOR 610322',
-        loc:'G02-04/TAV2',
-        um:'UND',
-        qty:10
-      },
-
-
-      {
-        code:'CZ09601487',
-        desc:'VENTOSA PINZAS ARAÑA VF-D45-CN',
-        loc:'G02-05',
-        um:'UND',
-        qty:20
-      },
-
-
-      {
-        code:'70113180',
-        desc:'VENTOSA OVALA 60X30 SAOB60X30NBR60 TAVIL',
-        loc:'G02-05/TAV',
-        um:'UND',
-        qty:25
+      if (!response.ok) {
+        throw new Error('Error HTTP ' + response.status);
       }
 
-
-    ],
-
-
-    movs:[]
-
-
-  };
-
-
-let movType = null;
-
-let movItem = null;
-
-
-/* =====================================================
-   GUARDAR DATOS
-===================================================== */
-
-const save = () => {
-
-  localStorage.setItem(
-    DB_KEY,
-    JSON.stringify(db)
-  );
-
-};
-
-
-/* =====================================================
-   CAMBIAR PESTAÑA
-===================================================== */
-
-function showTab(id,el){
-
-
-  document
-    .querySelectorAll('.tab')
-    .forEach(
-      t =>
-        t.classList.remove('active')
-    );
-
-
-  document
-    .querySelectorAll('.panel')
-    .forEach(
-      p =>
-        p.classList.remove('active')
-    );
-
-
-  if(el){
-
-    el.classList.add('active');
-
-  }
-
-
-  document
-    .getElementById(
-      'p-' + id
-    )
-    .classList.add('active');
-
-
-  if(id === 'inv'){
-
-    render();
-
-  }
-
-}
-
-
-/* =====================================================
-   PESTAÑA MOVIMIENTOS
-===================================================== */
-
-function clickTabMov(e){
-
-  showTab(
-    'mov',
-    e.target
-  );
-
-
-  renderMovs();
-
-}
-
-
-/* =====================================================
-   MOSTRAR INVENTARIO
-===================================================== */
-
-function render(){
-
-
-  const q =
-    document
-      .getElementById(
-        'search'
-      )
-      .value
-      .toLowerCase();
-
-
-  const list =
-    document.getElementById(
-      'list'
-    );
-
-
-  list.innerHTML = '';
-
-
-  db.items
-
-    .filter(i =>
-
-      i.code
-        .toLowerCase()
-        .includes(q)
-
-      ||
-
-      i.desc
-        .toLowerCase()
-        .includes(q)
-
-    )
-
-    .forEach(i => {
-
-
-      const d =
-        document.createElement(
-          'div'
-        );
-
-
-      d.className =
-        'item';
-
-
-      d.innerHTML = `
-
-        <div class="code">
-          ${i.code}
-        </div>
-
-        <div class="desc">
-          ${i.desc}
-        </div>
-
-        <div class="meta">
-
-          <span>
-            📍 ${i.loc} · ${i.um}
-          </span>
-
-          <span class="stock">
-            Stock: ${i.qty}
-          </span>
-
-        </div>
-
-
-        <div class="btns">
-
-
-          <button
-            class="btn btn-out"
-            onclick="openModal(
-              'RETIRO',
-              '${i.code}'
-            )"
-          >
-            − Retirar
-          </button>
-
-
-          <button
-            class="btn btn-in"
-            onclick="openModal(
-              'INGRESO',
-              '${i.code}'
-            )"
-          >
-            + Ingresar
-          </button>
-
-
-        </div>
-
-      `;
-
-
-      list.appendChild(d);
-
-    });
-
-
-  if(
-    !list.children.length
-  ){
-
-
-    list.innerHTML = `
-
-      <div
-        style="
-          color:var(--dim);
-          text-align:center;
-          padding:20px
-        "
-      >
-        Sin resultados
-      </div>
-
-    `;
-
-  }
-
-}
-
-
-/* =====================================================
-   ABRIR MODAL
-===================================================== */
-
-function openModal(
-  type,
-  code
-){
-
-
-  movType =
-    type;
-
-
-  movItem =
-    db.items.find(
-      i =>
-        i.code === code
-    );
-
-
-  document
-    .getElementById(
-      'm-code'
-    )
-    .textContent =
-      code;
-
-
-  document
-    .getElementById(
-      'm-desc'
-    )
-    .textContent =
-      movItem.desc;
-
-
-  document
-    .getElementById(
-      'm-stock'
-    )
-    .textContent =
-      'Stock actual: '
-      +
-      movItem.qty
-      +
-      ' '
-      +
-      movItem.um;
-
-
-  const btn =
-    document.getElementById(
-      'm-confirm'
-    );
-
-
-  btn.textContent =
-    'Confirmar '
-    +
-    (
-      type === 'RETIRO'
-        ? 'retiro ➖'
-        : 'ingreso ➕'
-    );
-
-
-  btn.className =
-    'btn '
-    +
-    (
-      type === 'RETIRO'
-        ? 'btn-out'
-        : 'btn-in'
-    );
-
-
-  document
-    .getElementById(
-      'm-qty'
-    )
-    .value =
-      1;
-
-
-  document
-    .getElementById(
-      'm-who'
-    )
-    .value =
-      '';
-
-
-  document
-    .getElementById(
-      'modal'
-    )
-    .classList
-    .add('open');
-
-}
-
-
-/* =====================================================
-   CERRAR MODAL
-===================================================== */
-
-function closeModal(){
-
-
-  document
-    .getElementById(
-      'modal'
-    )
-    .classList
-    .remove('open');
-
-}
-
-
-/* =====================================================
-   CONFIRMAR MOVIMIENTO
-===================================================== */
-
-function confirmMov(){
-
-
-  const qty =
-    parseInt(
-      document
-        .getElementById(
-          'm-qty'
-        )
-        .value
-    );
-
-
-  const who =
-    document
-      .getElementById(
-        'm-who'
-      )
-      .value
-      .trim();
-
-
-  if(
-    !qty ||
-    qty < 1
-  ){
-
-    return toast(
-      '⚠️ Cantidad inválida'
-    );
-
-  }
-
-
-  if(!who){
-
-    return toast(
-      '⚠️ Escribe quién retira/ingresa'
-    );
-
-  }
-
-
-  if(
-    movType === 'RETIRO'
-    &&
-    qty > movItem.qty
-  ){
-
-    return toast(
-      '⚠️ Stock insuficiente (máx '
-      +
-      movItem.qty
-      +
-      ')'
-    );
-
-  }
-
-
-  movItem.qty +=
-
-    movType === 'RETIRO'
-      ? -qty
-      : qty;
-
-
-  db.movs.unshift({
-
-    date:
-      new Date()
-        .toLocaleString(),
-
-    code:
-      movItem.code,
-
-    type:
-      movType,
-
-    qty:
-      qty,
-
-    who:
-      who
-
-  });
-
-
-  save();
-
-
-  closeModal();
-
-
-  toast(
-    '✅ '
-    +
-    movType
-    +
-    ' registrado: '
-    +
-    qty
-    +
-    ' × '
-    +
-    movItem.code
-  );
-
-
-  render();
-
-}
-
-
-/* =====================================================
-   AGREGAR ITEM
-===================================================== */
-
-function addItem(){
-
-
-  const code =
-    document
-      .getElementById(
-        'n-code'
-      )
-      .value
-      .trim();
-
-
-  const desc =
-    document
-      .getElementById(
-        'n-desc'
-      )
-      .value
-      .trim();
-
-
-  const loc =
-    document
-      .getElementById(
-        'n-loc'
-      )
-      .value
-      .trim();
-
-
-  const um =
-    document
-      .getElementById(
-        'n-um'
-      )
-      .value;
-
-
-  const qty =
-    parseInt(
-      document
-        .getElementById(
-          'n-qty'
-        )
-        .value
-    )
-    ||
-    0;
-
-
-  if(
-    !code ||
-    !desc ||
-    !loc
-  ){
-
-    return toast(
-      '⚠️ Completa código, descripción y ubicación'
-    );
-
-  }
-
-
-  if(
-    db.items.some(
-      i =>
-        i.code === code
-        &&
-        i.loc === loc
-    )
-  ){
-
-    return toast(
-      '⚠️ Ese código ya existe en esa ubicación'
-    );
-
-  }
-
-
-  db.items.push({
-
-    code,
-    desc,
-    loc,
-    um,
-    qty
-
-  });
-
-
-  if(qty > 0){
-
-    db.movs.unshift({
-
-      date:
-        new Date()
-          .toLocaleString(),
-
-      code,
-
-      type:
-        'INGRESO',
-
-      qty,
-
-      who:
-        'Registro inicial'
-
-    });
-
-  }
-
-
-  save();
-
-
-  toast(
-    '✅ Item registrado'
-  );
-
-
-  [
-    'n-code',
-    'n-desc',
-    'n-loc'
-  ]
-  .forEach(
-    id => {
-
-      document
-        .getElementById(
-          id
-        )
-        .value =
-          '';
-
-    }
-  );
-
-
-  document
-    .getElementById(
-      'n-qty'
-    )
-    .value =
-      0;
-
-
-  showTab(
-    'inv',
-    document.querySelector(
-      '.tab'
-    )
-  );
-
-}
-
-
-/* =====================================================
-   MOSTRAR MOVIMIENTOS
-===================================================== */
-
-function renderMovs(){
-
-
-  const t =
-    document.getElementById(
-      'movs'
-    );
-
-
-  t.innerHTML = '';
-
-
-  if(
-    !db.movs.length
-  ){
-
-    t.innerHTML = `
-
-      <tr>
-
-        <td
-          colspan="5"
-          style="
-            color:var(--dim);
-            text-align:center
-          "
-        >
-          Sin movimientos aún
-        </td>
-
-      </tr>
-
-    `;
-
-    return;
-
-  }
-
-
-  db.movs.forEach(
-    m => {
-
-
-      t.innerHTML += `
-
-        <tr>
-
-          <td>
-            ${m.date}
-          </td>
-
-          <td>
-            ${m.code}
-          </td>
-
-          <td
-            style="
-              color:
-              ${
-                m.type === 'RETIRO'
-                  ? '#ff5555'
-                  : 'var(--lime)'
-              }
-            "
-          >
-            ${m.type}
-          </td>
-
-          <td>
-
-            ${
-              m.type === 'RETIRO'
-                ? '−'
-                : '+'
-            }${m.qty}
-
-          </td>
-
-          <td>
-            ${m.who}
-          </td>
-
-        </tr>
-
-      `;
-
-    }
-  );
-
-}
-
-
-/* =====================================================
-   EXPORTAR SOLAMENTE MOVIMIENTOS A EXCEL
-===================================================== */
-
-function exportData(){
-
-
-  /*
-    Verificar si existen movimientos
-  */
-
-  if(
-    !db.movs.length
-  ){
-
-    return toast(
-      '⚠️ No hay movimientos para exportar'
-    );
-
-  }
-
-
-  /*
-    Convertir movimientos
-    al formato de Excel
-  */
-
-  const movimientos =
-    db.movs.map(
-      m => ({
-
-        'Fecha':
-          m.date,
-
-        'Código':
-          m.code,
-
-        'Tipo':
-          m.type,
-
-        'Cantidad':
-          m.qty,
-
-        'Quién':
-          m.who
-
-      })
-    );
-
-
-  /*
-    Crear libro Excel
-  */
-
-  const wb =
-    XLSX.utils.book_new();
-
-
-  /*
-    Crear hoja
-    SOLO MOVIMIENTOS
-  */
-
-  const ws =
-    XLSX.utils.json_to_sheet(
-      movimientos
-    );
-
-
-  /*
-    Ajustar ancho
-    de las columnas
-  */
-
-  ws['!cols'] = [
-
-    {
-      wch:22
-    },
-
-    {
-      wch:18
-    },
-
-    {
-      wch:15
-    },
-
-    {
-      wch:12
-    },
-
-    {
-      wch:25
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        // Si no es JSON, casi seguro es la pantalla de login de Google
+        if (text.includes('accounts.google.com') || text.includes('Sign in')) {
+          throw new Error('El deployment NO es público. Cambia "Quién tiene acceso" a "Cualquier persona".');
+        }
+        throw new Error('La respuesta no es JSON válido. ¿El deployment está bien publicado?');
+      }
     }
 
-  ];
+    async function apiPost(data) {
+      console.log('POST →', data);
 
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        redirect: 'follow'
+        // ⚠️ NO agregar Content-Type: application/json
+        // porque Apps Script no maneja preflight OPTIONS
+      });
 
-  /*
-    Activar filtros
-  */
+      const text = await response.text();
+      console.log('Respuesta POST:', text.substring(0, 300));
 
-  ws['!autofilter'] = {
+      if (!response.ok) {
+        throw new Error('Error HTTP ' + response.status);
+      }
 
-    ref:
-      'A1:E'
-      +
-      (
-        movimientos.length + 1
-      )
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        throw new Error('Respuesta POST no es JSON');
+      }
+    }
 
-  };
+    /* =====================================================
+       CARGAR DATOS DESDE GOOGLE SHEETS
+    ===================================================== */
+    async function loadDatabase() {
+      try {
+        const data = await apiGet('getDatabase');
+        console.log('✅ Datos recibidos:', data);
 
+        if (data.items) db.items = data.items;
+        if (data.movs)  db.movs  = data.movs;
 
-  /*
-    Agregar solamente
-    la hoja Movimientos
-  */
+        // Normalizar: convertir qty a número por si viene como string
+        db.items = db.items.map(i => ({
+          ...i,
+          qty: Number(i.qty) || 0
+        }));
 
-  XLSX.utils.book_append_sheet(
+        render();
+      } catch (error) {
+        console.error('❌ Error cargando Google Sheets:', error);
+        toast(error.message, true);
 
-    wb,
+        document.getElementById('list').innerHTML = `
+          <div style="color:#ff5555;text-align:center;padding:20px;font-size:.85rem">
+            <i class='bx bx-error-circle' style="font-size:2rem;display:block;margin-bottom:8px"></i>
+            ${error.message}
+          </div>
+        `;
+      }
+    }
 
-    ws,
+    /* =====================================================
+       CAMBIAR PESTAÑA
+    ===================================================== */
+    function showTab(id, el) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
 
-    'Movimientos'
+      if (el) el.classList.add('active');
+      document.getElementById('p-' + id).classList.add('active');
 
-  );
+      if (id === 'inv') render();
+    }
 
+    function clickTabMov(e) {
+      showTab('mov', e.target);
+      renderMovs();
+    }
 
-  /*
-    Obtener fecha
-  */
+    /* =====================================================
+       MOSTRAR INVENTARIO
+    ===================================================== */
+    function render() {
+      const q = document.getElementById('search').value.toLowerCase();
+      const list = document.getElementById('list');
+      list.innerHTML = '';
 
-  const ahora =
-    new Date();
+      db.items
+        .filter(i =>
+          String(i.code || '').toLowerCase().includes(q) ||
+          String(i.desc || '').toLowerCase().includes(q)
+        )
+        .forEach(i => {
+          const d = document.createElement('div');
+          d.className = 'item';
+          d.innerHTML = `
+            <div class="code">
+              <i class='bx bx-cube'></i> ${i.code || ''}
+            </div>
+            <div class="desc">
+              ${i.desc || ''}
+            </div>
+            <div class="meta">
+              <span class="loc">
+                <i class='bx bx-map-pin'></i> ${i.loc || ''} · ${i.um || ''}
+              </span>
+              <span class="stock">
+                <i class='bx bx-layer'></i> ${i.qty}
+              </span>
+            </div>
+            <div class="btns">
+              <button class="btn btn-out" onclick="openModal('RETIRO', '${String(i.code).replace(/'/g, "\\'")}')">
+                <i class='bx bx-minus-circle'></i> Retirar
+              </button>
+              <button class="btn btn-in" onclick="openModal('INGRESO', '${String(i.code).replace(/'/g, "\\'")}')">
+                <i class='bx bx-plus-circle'></i> Ingresar
+              </button>
+            </div>
+          `;
+          list.appendChild(d);
+        });
 
+      if (!list.children.length) {
+        list.innerHTML = `
+          <div style="color:var(--dim);text-align:center;padding:20px">
+            Sin resultados
+          </div>
+        `;
+      }
+    }
 
-  const fecha =
-    ahora
-      .toISOString()
-      .slice(
-        0,
-        10
-      );
+    /* =====================================================
+       ABRIR MODAL
+    ===================================================== */
+    function openModal(type, code) {
+      movType = type;
+      movItem = db.items.find(i => String(i.code) === String(code));
 
+      if (!movItem) return toast('Item no encontrado', true);
 
-  /*
-    Obtener hora
-  */
+      document.getElementById('m-code').textContent = code;
+      document.getElementById('m-desc').textContent = movItem.desc;
+      document.getElementById('m-stock').innerHTML =
+        "<i class='bx bx-layer'></i> Stock actual: " + movItem.qty + ' ' + (movItem.um || '');
 
-  const hora =
-    ahora
-      .toTimeString()
-      .slice(
-        0,
-        8
-      )
-      .replace(
-        /:/g,
-        '-'
-      );
+      const btn = document.getElementById('m-confirm');
+      btn.innerHTML = type === 'RETIRO'
+        ? "<i class='bx bx-minus-circle'></i> Confirmar retiro"
+        : "<i class='bx bx-plus-circle'></i> Confirmar ingreso";
+      btn.className = 'btn ' + (type === 'RETIRO' ? 'btn-out' : 'btn-in');
 
+      document.getElementById('m-qty').value = 1;
+      document.getElementById('m-who').value = '';
+      document.getElementById('modal').classList.add('open');
+    }
 
-  /*
-    Nombre del archivo
-  */
+    function closeModal() {
+      document.getElementById('modal').classList.remove('open');
+    }
 
-  const nombreArchivo =
-    'movimientos_almacen_'
-    +
-    fecha
-    +
-    '_'
-    +
-    hora
-    +
-    '.xlsx';
+    /* =====================================================
+       CONFIRMAR MOVIMIENTO
+    ===================================================== */
+    async function confirmMov() {
+      const qty = parseInt(document.getElementById('m-qty').value);
+      const who = document.getElementById('m-who').value.trim();
 
+      if (!qty || qty < 1) return toast('Cantidad inválida', true);
+      if (!who) return toast('Escribe quién retira/ingresa', true);
 
-  /*
-    Descargar Excel
-  */
+      if (movType === 'RETIRO' && qty > Number(movItem.qty)) {
+        return toast('Stock insuficiente (máx ' + movItem.qty + ')', true);
+      }
 
-  XLSX.writeFile(
+      try {
+        const result = await apiPost({
+          action: 'movement',
+          code: movItem.code,
+          type: movType,
+          qty: qty,
+          who: who
+        });
 
-    wb,
+        if (result.success === false) {
+          return toast(result.message || 'No se pudo registrar el movimiento', true);
+        }
 
-    nombreArchivo
+        // Actualización local
+        movItem.qty += movType === 'RETIRO' ? -qty : qty;
 
-  );
+        db.movs.unshift({
+          date: new Date().toLocaleString(),
+          code: movItem.code,
+          type: movType,
+          qty: qty,
+          who: who
+        });
 
+        closeModal();
+        toast(movType + ' registrado: ' + qty + ' × ' + movItem.code, false);
+        render();
+      } catch (error) {
+        console.error(error);
+        toast('Error al guardar: ' + error.message, true);
+      }
+    }
 
-  toast(
-    '⬇ Movimientos exportados correctamente'
-  );
+    /* =====================================================
+       AGREGAR ITEM
+    ===================================================== */
+    async function addItem() {
+      const code = document.getElementById('n-code').value.trim();
+      const desc = document.getElementById('n-desc').value.trim();
+      const loc  = document.getElementById('n-loc').value.trim();
+      const um   = document.getElementById('n-um').value;
+      const qty  = parseInt(document.getElementById('n-qty').value) || 0;
 
-}
+      if (!code || !desc || !loc) {
+        return toast('Completa código, descripción y ubicación', true);
+      }
 
+      if (db.items.some(i => String(i.code) === code && String(i.loc) === loc)) {
+        return toast('Ese código ya existe en esa ubicación', true);
+      }
 
-/* =====================================================
-   MENSAJE TOAST
-===================================================== */
+      try {
+        const result = await apiPost({
+          action: 'addItem',
+          code, desc, loc, um, qty
+        });
 
-function toast(msg){
+        if (result.success === false) {
+          return toast(result.message || 'No se pudo registrar el item', true);
+        }
 
+        db.items.push({ code, desc, loc, um, qty });
 
-  const t =
-    document.getElementById(
-      'toast'
-    );
+        if (qty > 0) {
+          db.movs.unshift({
+            date: new Date().toLocaleString(),
+            code,
+            type: 'INGRESO',
+            qty,
+            who: 'Registro inicial'
+          });
+        }
 
+        toast('Item registrado', false);
 
-  t.textContent =
-    msg;
+        ['n-code', 'n-desc', 'n-loc'].forEach(id => {
+          document.getElementById(id).value = '';
+        });
+        document.getElementById('n-qty').value = 0;
 
+        showTab('inv', document.querySelector('.tab'));
+        render();
+      } catch (error) {
+        console.error(error);
+        toast('Error al guardar: ' + error.message, true);
+      }
+    }
 
-  t.style.display =
-    'block';
+    /* =====================================================
+       MOSTRAR MOVIMIENTOS
+    ===================================================== */
+    function renderMovs() {
+      const t = document.getElementById('movs');
+      t.innerHTML = '';
 
+      if (!db.movs.length) {
+        t.innerHTML = `
+          <tr>
+            <td colspan="5" style="color:var(--dim);text-align:center">
+              Sin movimientos aún
+            </td>
+          </tr>
+        `;
+        return;
+      }
 
-  setTimeout(
-    () => {
+      db.movs.forEach(m => {
+        t.innerHTML += `
+          <tr>
+            <td>${m.date || ''}</td>
+            <td>${m.code || ''}</td>
+            <td style="color:${m.type === 'RETIRO' ? '#ff5555' : 'var(--lime)'}">${m.type || ''}</td>
+            <td>${m.type === 'RETIRO' ? '−' : '+'}${m.qty || 0}</td>
+            <td>${m.who || ''}</td>
+          </tr>
+        `;
+      });
+    }
 
-      t.style.display =
-        'none';
+    /* =====================================================
+       EXPORTAR MOVIMIENTOS A EXCEL
+    ===================================================== */
+    function exportData() {
+      if (!db.movs.length) {
+        return toast('No hay movimientos para exportar', true);
+      }
 
-    },
-    2500
-  );
+      const movimientos = db.movs.map(m => ({
+        'Fecha': m.date,
+        'Código': m.code,
+        'Tipo': m.type,
+        'Cantidad': m.qty,
+        'Quién': m.who
+      }));
 
-}
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(movimientos);
 
+      ws['!cols'] = [
+        { wch: 22 }, { wch: 18 }, { wch: 15 }, { wch: 12 }, { wch: 25 }
+      ];
 
-/* =====================================================
-   INICIAR APLICACIÓN
-===================================================== */
+      ws['!autofilter'] = { ref: 'A1:E' + (movimientos.length + 1) };
 
-render();
+      XLSX.utils.book_append_sheet(wb, ws, 'Movimientos');
 
-</script>
+      const ahora = new Date();
+      const fecha = ahora.toISOString().slice(0, 10);
+      const hora = ahora.toTimeString().slice(0, 8).replace(/:/g, '-');
+      const nombreArchivo = 'movimientos_almacen_' + fecha + '_' + hora + '.xlsx';
 
+      XLSX.writeFile(wb, nombreArchivo);
+
+      toast('Movimientos exportados correctamente', false);
+    }
+
+    /* =====================================================
+       TOAST
+    ===================================================== */
+    function toast(msg, warn) {
+      const t = document.getElementById('toast');
+      t.innerHTML = "<i class='bx " + (warn ? 'bx-error-circle' : 'bx-check-circle') + "'></i> " + msg;
+      t.className = 'toast' + (warn ? ' warn' : '');
+      t.style.display = 'flex';
+
+      setTimeout(() => {
+        t.style.display = 'none';
+      }, 4000);
+    }
+
+    /* =====================================================
+       INICIAR
+    ===================================================== */
+    loadDatabase();
+  </script>
 </body>
-
 </html>
-
