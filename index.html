@@ -10,17 +10,17 @@
 
   <style>
     :root {
-      --bg: #0f1012;
-      --bg-2: #141518;
-      --card: #1a1c1f;
-      --card-2: #1f2125;
+      --bg: #121317;
+      --bg-2: #17191d;
+      --card: #1c1e22;
+      --card-2: #212328;
       --border: #2a2c30;
       --border-2: #35383d;
       --txt: #e8e8e8;
       --dim: #9aa0a6;
       --dim-2: #6b7076;
-      --lime: #CCFF00;
-      --lime-glow: rgba(204, 255, 0, .15);
+      --lime: #C4F000;
+      --lime-glow: rgba(196, 240, 0, .15);
       --red: #ff5555;
       --red-glow: rgba(255, 85, 85, .15);
       --radius: 12px;
@@ -37,7 +37,7 @@
     html { scroll-behavior: smooth; }
 
     body {
-      background: radial-gradient(circle at top, #16181c 0%, var(--bg) 60%);
+      background: radial-gradient(circle at top, #1a1c20 0%, var(--bg) 60%);
       background-attachment: fixed;
       color: var(--txt);
       max-width: 600px;
@@ -80,7 +80,7 @@
       font-weight: 700;
       color: var(--lime);
       background: var(--lime-glow);
-      border: 1px solid rgba(204, 255, 0, .25);
+      border: 1px solid rgba(196, 240, 0, .25);
       padding: 3px 8px;
       border-radius: 20px;
       text-transform: uppercase;
@@ -88,7 +88,6 @@
       white-space: nowrap;
     }
 
-    /* Descripción breve con acciones a la derecha */
     .app-desc {
       color: var(--dim);
       font-size: .8rem;
@@ -114,7 +113,6 @@
 
     .app-desc .feature.retiro i { color: var(--red); }
 
-    /* Acciones alineadas a la derecha */
     .desc-actions {
       margin-left: auto;
       display: inline-flex;
@@ -131,7 +129,7 @@
       border-radius: 10px;
       background: var(--lime-glow);
       color: var(--lime);
-      border: 1px solid rgba(204, 255, 0, .2);
+      border: 1px solid rgba(196, 240, 0, .2);
     }
 
     .refresh-btn {
@@ -233,7 +231,7 @@
     .panel-loading-overlay {
       position: absolute;
       inset: 0;
-      background: rgba(15, 16, 18, .88);
+      background: rgba(18, 19, 23, .88);
       backdrop-filter: blur(3px);
       display: none;
       flex-direction: column;
@@ -411,19 +409,19 @@
     }
 
     .btn-in {
-      background: linear-gradient(180deg, #d8ff33 0%, var(--lime) 100%);
+      background: linear-gradient(180deg, #d0f52e 0%, var(--lime) 100%);
       color: #000;
       box-shadow: 0 3px 12px var(--lime-glow);
     }
     .btn-in:not(:disabled):hover {
-      box-shadow: 0 5px 18px rgba(204, 255, 0, .3);
+      box-shadow: 0 5px 18px rgba(196, 240, 0, .3);
       filter: brightness(1.05);
     }
 
     .btn-add {
       background: var(--card);
       color: var(--lime);
-      border: 1px dashed rgba(204, 255, 0, .4);
+      border: 1px dashed rgba(196, 240, 0, .4);
       width: 100%;
       padding: 14px;
       border-radius: var(--radius);
@@ -476,6 +474,99 @@
       font-weight: 600;
       letter-spacing: .3px;
       text-transform: uppercase;
+    }
+
+    /* ============ SELECT CON WRAPPER ============ */
+    .select-wrap {
+      position: relative;
+      width: 100%;
+      margin-bottom: 12px;
+    }
+
+    .select-wrap select {
+      width: 100%;
+      padding: 12px 46px 12px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      background: var(--card);
+      color: var(--txt);
+      font-size: .92rem;
+      font-family: inherit;
+      cursor: pointer;
+      outline: none;
+
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+
+      transition: border-color .2s, box-shadow .2s, background .2s;
+      margin-bottom: 0;
+    }
+
+    .select-wrap select:hover:not(:disabled) {
+      border-color: var(--border-2);
+      background: var(--card-2);
+    }
+
+    .select-wrap select:focus {
+      border-color: var(--lime);
+      background: var(--card-2);
+      box-shadow:
+        0 0 0 3px var(--lime-glow),
+        0 0 20px rgba(196, 240, 0, .08);
+    }
+
+    .select-wrap select:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    .select-arrow {
+      position: absolute;
+      right: 6px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 34px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--dim);
+      font-size: 1.1rem;
+      pointer-events: none;
+      border-radius: 8px;
+      transition: all .25s ease;
+    }
+
+    .select-wrap select:focus ~ .select-arrow {
+      color: var(--lime);
+      background: var(--lime-glow);
+    }
+
+    .select-wrap select:focus ~ .select-arrow i {
+      transform: rotate(180deg);
+    }
+
+    .select-arrow i {
+      transition: transform .25s ease;
+    }
+
+    .select-wrap select option {
+      background: var(--card-2);
+      color: var(--txt);
+      padding: 10px;
+    }
+
+    /* ============ INPUT NUMBER SIN FLECHAS ============ */
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    input[type="number"] {
+      -moz-appearance: textfield;
+      appearance: textfield;
     }
 
     /* ============ TABLA ============ */
@@ -547,7 +638,7 @@
       bottom: 24px;
       left: 50%;
       transform: translateX(-50%);
-      background: linear-gradient(180deg, #d8ff33 0%, var(--lime) 100%);
+      background: linear-gradient(180deg, #d0f52e 0%, var(--lime) 100%);
       color: #000;
       padding: 13px 22px;
       border-radius: var(--radius);
@@ -559,7 +650,7 @@
       gap: 8px;
       max-width: 90%;
       text-align: center;
-      box-shadow: 0 10px 30px rgba(204, 255, 0, .25);
+      box-shadow: 0 10px 30px rgba(196, 240, 0, .25);
       animation: slideUp .25s ease;
     }
 
@@ -648,7 +739,6 @@
       <span class="version-badge">Demo · v0.7</span>
     </div>
 
-    <!-- Descripción breve + botón Actualizar -->
     <div class="app-desc">
       <span class="feature">
         <i class='bx bx-package'></i> Control de stock de items
@@ -747,15 +837,20 @@
     <input id="n-loc" placeholder="Ej: G02-04/TAV1">
 
     <label>Unidad de medida</label>
-    <select id="n-um">
-      <option>UND</option>
-      <option>KG</option>
-      <option>LTS</option>
-      <option>MTS</option>
-    </select>
+    <div class="select-wrap" id="um-wrap">
+      <select id="n-um">
+        <option value="UND">UND — Unidades</option>
+        <option value="KG">KG — Kilogramos</option>
+        <option value="LTS">LTS — Litros</option>
+        <option value="MTS">MTS — Metros</option>
+      </select>
+      <span class="select-arrow">
+        <i class='bx bx-chevron-down'></i>
+      </span>
+    </div>
 
     <label>Cantidad inicial</label>
-    <input id="n-qty" type="number" value="0" min="0">
+    <input id="n-qty" type="number" min="0" placeholder="0" inputmode="numeric">
 
     <button class="btn btn-in" id="btn-add-item" style="width:100%" onclick="addItem()">
       <i class='bx bx-save'></i> Guardar item
@@ -776,7 +871,7 @@
       <div id="m-stock" style="color:var(--dim);font-size:.8rem;margin-bottom:12px;display:flex;align-items:center;gap:6px"></div>
 
       <label>Cantidad</label>
-      <input id="m-qty" type="number" min="1" value="1">
+      <input id="m-qty" type="number" min="1" value="1" placeholder="1" inputmode="numeric">
 
       <label>Nombre de quien retira / ingresa</label>
       <input id="m-who" placeholder="Ej: Juan Pérez">
@@ -1351,7 +1446,7 @@
       ['n-code', 'n-desc', 'n-loc'].forEach(id => {
         document.getElementById(id).value = '';
       });
-      document.getElementById('n-qty').value = 0;
+      document.getElementById('n-qty').value = '';
 
       showTab('inv', document.getElementById('tab-inv'));
       render();
