@@ -123,7 +123,10 @@
       align-items: center;
       justify-content: center;
       gap: 6px;
+      transition: opacity .2s;
     }
+
+    .btn:disabled { opacity: .6; cursor: not-allowed; }
 
     .btn-out { background: #ff5555; color: #fff; }
     .btn-in { background: var(--lime); color: #000; }
@@ -232,6 +235,11 @@
     @keyframes spin {
       from { transform: rotate(0deg); }
       to   { transform: rotate(360deg); }
+    }
+
+    .bx-spin {
+      animation: spin 1s linear infinite;
+      display: inline-block;
     }
   </style>
 </head>
@@ -354,7 +362,7 @@
     /* =====================================================
        URL DEL APPS SCRIPT (ACTUALIZADA)
     ===================================================== */
-    const API_URL = 'https://script.google.com/macros/s/AKfycbwgoQklqYS5B12naUfzb-6c1ujHrXTojJzlhe5w6qO6tSCWkhAFyrVE0T6Add8N-r2Q/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycby3mkECqJKTyYYht-nibvx43QEiXw_KRoEIO9275DJxpQVeXBpIEUGMNqqixQj7F1QL/exec';
 
     /* =====================================================
        BASE DE DATOS EN MEMORIA
@@ -386,7 +394,6 @@
       try {
         return JSON.parse(text);
       } catch (e) {
-        // Si no es JSON, casi seguro es la pantalla de login de Google
         if (text.includes('accounts.google.com') || text.includes('Sign in')) {
           throw new Error('El deployment NO es público. Cambia "Quién tiene acceso" a "Cualquier persona".');
         }
@@ -430,7 +437,7 @@
         if (data.items) db.items = data.items;
         if (data.movs)  db.movs  = data.movs;
 
-        // Normalizar: convertir qty a número por si viene como string
+        // Normalizar qty a número
         db.items = db.items.map(i => ({
           ...i,
           qty: Number(i.qty) || 0
@@ -535,6 +542,7 @@
         "<i class='bx bx-layer'></i> Stock actual: " + movItem.qty + ' ' + (movItem.um || '');
 
       const btn = document.getElementById('m-confirm');
+      btn.disabled = false;
       btn.innerHTML = type === 'RETIRO'
         ? "<i class='bx bx-minus-circle'></i> Confirmar retiro"
         : "<i class='bx bx-plus-circle'></i> Confirmar ingreso";
@@ -550,7 +558,7 @@
     }
 
     /* =====================================================
-       CONFIRMAR MOVIMIENTO
+       CONFIRMAR MOVIMIENTO (CON FEEDBACK VISUAL)
     ===================================================== */
     async function confirmMov() {
       const qty = parseInt(document.getElementById('m-qty').value);
@@ -563,6 +571,12 @@
         return toast('Stock insuficiente (máx ' + movItem.qty + ')', true);
       }
 
+      // 🔒 Bloquear botón mientras se guarda
+      const btn = document.getElementById('m-confirm');
+      const originalHTML = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = "<i class='bx bx-loader-circle bx-spin'></i> Guardando...";
+
       try {
         const result = await apiPost({
           action: 'movement',
@@ -573,10 +587,12 @@
         });
 
         if (result.success === false) {
-          return toast(result.message || 'No se pudo registrar el movimiento', true);
+          btn.disabled = false;
+          btn.innerHTML = originalHTML;
+          return toast(result.message || 'No se pudo registrar', true);
         }
 
-        // Actualización local
+        // ✅ Backend confirmó → actualizar local
         movItem.qty += movType === 'RETIRO' ? -qty : qty;
 
         db.movs.unshift({
@@ -588,11 +604,18 @@
         });
 
         closeModal();
-        toast(movType + ' registrado: ' + qty + ' × ' + movItem.code, false);
+        toast(
+          '✅ ' + movType + ' guardado en Google Sheets: ' + qty + ' × ' + movItem.code,
+          false
+        );
         render();
+
       } catch (error) {
         console.error(error);
-        toast('Error al guardar: ' + error.message, true);
+        toast('Error: ' + error.message, true);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
       }
     }
 
@@ -614,6 +637,11 @@
         return toast('Ese código ya existe en esa ubicación', true);
       }
 
+      const btn = event.target;
+      const originalHTML = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = "<i class='bx bx-loader-circle bx-spin'></i> Guardando...";
+
       try {
         const result = await apiPost({
           action: 'addItem',
@@ -621,6 +649,8 @@
         });
 
         if (result.success === false) {
+          btn.disabled = false;
+          btn.innerHTML = originalHTML;
           return toast(result.message || 'No se pudo registrar el item', true);
         }
 
@@ -636,7 +666,7 @@
           });
         }
 
-        toast('Item registrado', false);
+        toast('✅ Item guardado en Google Sheets', false);
 
         ['n-code', 'n-desc', 'n-loc'].forEach(id => {
           document.getElementById(id).value = '';
@@ -645,9 +675,13 @@
 
         showTab('inv', document.querySelector('.tab'));
         render();
+
       } catch (error) {
         console.error(error);
-        toast('Error al guardar: ' + error.message, true);
+        toast('Error: ' + error.message, true);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
       }
     }
 
