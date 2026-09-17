@@ -56,10 +56,34 @@
       align-items: center;
       justify-content: center;
       gap: 6px;
+      transition: all .2s;
+      position: relative;
     }
 
     .tab.active { color: #000; background: var(--lime); border-color: var(--lime); font-weight: bold; }
     .tab.active i { color: #000; }
+
+    /* Indicador de carga dentro de la pestaña */
+    .tab.loading::after {
+      content: '';
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--lime);
+      animation: pulse 1s ease-in-out infinite;
+    }
+
+    .tab.active.loading::after {
+      background: #000;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: .4; transform: scale(1.3); }
+    }
 
     .panel { display: none; }
     .panel.active { display: block; }
@@ -148,6 +172,11 @@
       gap: 8px;
     }
 
+    .btn-add:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
     input, select {
       width: 100%;
       padding: 12px;
@@ -157,6 +186,11 @@
       color: var(--txt);
       margin-bottom: 10px;
       font-size: .95rem;
+    }
+
+    input:disabled, select:disabled {
+      opacity: .5;
+      cursor: not-allowed;
     }
 
     label { font-size: .8rem; color: var(--dim); display: block; margin-bottom: 4px; }
@@ -241,6 +275,56 @@
       animation: spin 1s linear infinite;
       display: inline-block;
     }
+
+    .cache-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: .7rem;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: rgba(204, 255, 0, .1);
+      color: var(--lime);
+      margin-left: auto;
+    }
+
+    .refresh-btn {
+      margin-left: 6px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--dim);
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: .7rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .refresh-btn:hover { color: var(--lime); border-color: var(--lime); }
+
+    /* Overlay de carga para los paneles Movimientos / Nuevo Item */
+    .panel-loading {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--dim);
+      font-size: .9rem;
+    }
+
+    .panel-loading i {
+      font-size: 2.2rem;
+      color: var(--lime);
+      animation: spin 1s linear infinite;
+      display: block;
+      margin-bottom: 12px;
+    }
+
+    .panel-loading .hint {
+      font-size: .75rem;
+      color: var(--dim);
+      margin-top: 8px;
+    }
   </style>
 </head>
 <body>
@@ -250,17 +334,23 @@
   </h1>
 
   <div class="sub">
-    <i class='bx bx-qr'></i> Demo QR · v0.2 · datos guardados en Google Sheets
+    <i class='bx bx-qr'></i> Demo QR · v0.4 · datos guardados en Google Sheets
+    <span class="cache-badge" id="cache-badge" style="display:none">
+      <i class='bx bx-hdd'></i> caché
+    </span>
+    <button class="refresh-btn" onclick="forceRefresh()" title="Recargar datos frescos">
+      <i class='bx bx-refresh'></i>
+    </button>
   </div>
 
   <div class="tabs">
-    <div class="tab active" onclick="showTab('inv', this)">
+    <div class="tab active" id="tab-inv" onclick="showTab('inv', this)">
       <i class='bx bx-box'></i> Inventario
     </div>
-    <div class="tab" onclick="clickTabMov(event)">
+    <div class="tab" id="tab-mov" onclick="clickTabMov(event)">
       <i class='bx bx-history'></i> Movimientos
     </div>
-    <div class="tab" onclick="showTab('new', this)">
+    <div class="tab" id="tab-new" onclick="showTab('new', this)">
       <i class='bx bx-plus-circle'></i> Nuevo Item
     </div>
   </div>
@@ -274,33 +364,38 @@
 
     <div id="list">
       <div class="loading">
-        <i class='bx bx-loader-circle'></i>
-        Conectando con Google Sheets...
+        <i class='bx bx-loader-circle bx-spin'></i>
+        <div id="loading-text">Conectando con Google Sheets...</div>
+        <div style="font-size:.75rem;color:var(--dim);margin-top:8px">
+          La primera carga puede tardar unos segundos
+        </div>
       </div>
     </div>
 
-    <button class="btn-add" onclick="showTab('new', document.querySelectorAll('.tab')[2])">
+    <button class="btn-add" id="btn-add-from-inv" onclick="showTab('new', document.querySelectorAll('.tab')[2])">
       <i class='bx bx-plus-circle'></i> Registrar nuevo item
     </button>
   </div>
 
   <!-- PANEL MOVIMIENTOS -->
   <div class="panel" id="p-mov">
-    <table>
-      <thead>
-        <tr>
-          <th>Fecha</th>
-          <th>Item</th>
-          <th>Tipo</th>
-          <th>Cant</th>
-          <th>Quién</th>
-        </tr>
-      </thead>
-      <tbody id="movs"></tbody>
-    </table>
+    <div id="movs-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Item</th>
+            <th>Tipo</th>
+            <th>Cant</th>
+            <th>Quién</th>
+          </tr>
+        </thead>
+        <tbody id="movs"></tbody>
+      </table>
+    </div>
 
     <div class="export-row">
-      <button class="btn" onclick="exportData()">
+      <button class="btn" id="btn-export" onclick="exportData()">
         <i class='bx bx-download'></i> Exportar Excel
       </button>
     </div>
@@ -308,29 +403,31 @@
 
   <!-- PANEL NUEVO ITEM -->
   <div class="panel" id="p-new">
-    <label>Código (tal cual proveedor)</label>
-    <input id="n-code" placeholder="Ej: CZ09602061">
+    <div id="new-form">
+      <label>Código (tal cual proveedor)</label>
+      <input id="n-code" placeholder="Ej: CZ09602061">
 
-    <label>Descripción completa</label>
-    <input id="n-desc" placeholder="Ej: VENTOSA FUELLE D.80 SAB80NBR_60G38_IG">
+      <label>Descripción completa</label>
+      <input id="n-desc" placeholder="Ej: VENTOSA FUELLE D.80 SAB80NBR_60G38_IG">
 
-    <label>Ubicación</label>
-    <input id="n-loc" placeholder="Ej: G02-04/TAV1">
+      <label>Ubicación</label>
+      <input id="n-loc" placeholder="Ej: G02-04/TAV1">
 
-    <label>Unidad de medida</label>
-    <select id="n-um">
-      <option>UND</option>
-      <option>KG</option>
-      <option>LTS</option>
-      <option>MTS</option>
-    </select>
+      <label>Unidad de medida</label>
+      <select id="n-um">
+        <option>UND</option>
+        <option>KG</option>
+        <option>LTS</option>
+        <option>MTS</option>
+      </select>
 
-    <label>Cantidad inicial</label>
-    <input id="n-qty" type="number" value="0" min="0">
+      <label>Cantidad inicial</label>
+      <input id="n-qty" type="number" value="0" min="0">
 
-    <button class="btn btn-in" style="width:100%" onclick="addItem()">
-      <i class='bx bx-save'></i> Guardar item
-    </button>
+      <button class="btn btn-in" id="btn-add-item" style="width:100%" onclick="addItem()">
+        <i class='bx bx-save'></i> Guardar item
+      </button>
+    </div>
   </div>
 
   <!-- MODAL -->
@@ -360,125 +457,452 @@
 
   <script>
     /* =====================================================
-       URL DEL APPS SCRIPT (ACTUALIZADA)
+       CONFIGURACIÓN
     ===================================================== */
     const API_URL = 'https://script.google.com/macros/s/AKfycby3mkECqJKTyYYht-nibvx43QEiXw_KRoEIO9275DJxpQVeXBpIEUGMNqqixQj7F1QL/exec';
 
-    /* =====================================================
-       BASE DE DATOS EN MEMORIA
-    ===================================================== */
+    const CACHE_KEY = 'inventario_cache_v1';
+    const CACHE_TTL = 1000 * 60 * 5; // 5 minutos
+
     let db = { items: [], movs: [] };
     let movType = null;
     let movItem = null;
 
+    /* ⚡ NUEVO: estado global de carga */
+    let isLoading = false;
+    let currentTab = 'inv';
+
+    const loadingMessages = [
+      'Conectando con Google Sheets...',
+      'Despertando servidor...',
+      'Cargando inventario...',
+      'Casi listo...'
+    ];
+    let loadingInterval = null;
+
     /* =====================================================
-       CONEXIÓN CON GOOGLE SHEETS
+       HELPERS
+    ===================================================== */
+    function pick(obj, keys) {
+      if (!obj) return '';
+      for (const k of keys) {
+        if (obj[k] !== undefined && obj[k] !== null && obj[k] !== '') {
+          return obj[k];
+        }
+      }
+      return '';
+    }
+
+    function normalizeType(val) {
+      const s = String(val || '').trim().toUpperCase();
+      if (s.includes('RETIRO') || s === 'OUT' || s === 'SALIDA') return 'RETIRO';
+      if (s.includes('INGRESO') || s === 'IN' || s === 'ENTRADA') return 'INGRESO';
+      return s || '—';
+    }
+
+    function normalizeDate(val) {
+      if (!val) return '—';
+      if (typeof val === 'string') {
+        const isoMatch = val.match(/^\d{4}-\d{2}-\d{2}T/);
+        if (isoMatch) {
+          try { return new Date(val).toLocaleString(); }
+          catch { return val; }
+        }
+        return val;
+      }
+      if (val instanceof Date) return val.toLocaleString();
+      return String(val);
+    }
+
+    /* =====================================================
+       FETCH CON REINTENTOS
+    ===================================================== */
+    async function fetchWithRetry(url, options = {}, retries = 3, delayMs = 1000) {
+      for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+          console.log(`Intento ${attempt}/${retries} → ${url.substring(0, 90)}...`);
+          const response = await fetch(url, options);
+
+          if ((response.status === 404 || response.status >= 500) && attempt < retries) {
+            console.warn(`HTTP ${response.status}, reintentando en ${delayMs * attempt}ms...`);
+            await new Promise(r => setTimeout(r, delayMs * attempt));
+            continue;
+          }
+          return response;
+        } catch (err) {
+          console.warn(`Intento ${attempt} falló:`, err.message);
+          if (attempt === retries) throw err;
+          await new Promise(r => setTimeout(r, delayMs * attempt));
+        }
+      }
+    }
+
+    /* =====================================================
+       API GET / POST
     ===================================================== */
     async function apiGet(action) {
-      const url = API_URL + '?action=' + encodeURIComponent(action);
-      console.log('GET →', url);
-
-      const response = await fetch(url, {
-        method: 'GET',
-        cache: 'no-store',
-        redirect: 'follow'
+      const url = API_URL + '?action=' + encodeURIComponent(action) + '&t=' + Date.now();
+      const response = await fetchWithRetry(url, {
+        method: 'GET', cache: 'no-store', redirect: 'follow'
       });
-
       const text = await response.text();
-      console.log('Respuesta cruda (primeros 300 chars):', text.substring(0, 300));
+      console.log('Respuesta GET (primeros 300 chars):', text.substring(0, 300));
 
-      if (!response.ok) {
-        throw new Error('Error HTTP ' + response.status);
-      }
+      if (!response.ok) throw new Error('Error HTTP ' + response.status);
 
-      try {
-        return JSON.parse(text);
-      } catch (e) {
+      try { return JSON.parse(text); }
+      catch (e) {
         if (text.includes('accounts.google.com') || text.includes('Sign in')) {
-          throw new Error('El deployment NO es público. Cambia "Quién tiene acceso" a "Cualquier persona".');
+          throw new Error('El deployment NO es público.');
         }
-        throw new Error('La respuesta no es JSON válido. ¿El deployment está bien publicado?');
+        throw new Error('La respuesta no es JSON válido.');
       }
     }
 
     async function apiPost(data) {
       console.log('POST →', data);
-
-      const response = await fetch(API_URL, {
+      const response = await fetchWithRetry(API_URL, {
         method: 'POST',
         body: JSON.stringify(data),
         redirect: 'follow'
-        // ⚠️ NO agregar Content-Type: application/json
-        // porque Apps Script no maneja preflight OPTIONS
-      });
+      }, 3, 800);
 
       const text = await response.text();
       console.log('Respuesta POST:', text.substring(0, 300));
 
-      if (!response.ok) {
-        throw new Error('Error HTTP ' + response.status);
+      if (!response.ok) throw new Error('Error HTTP ' + response.status);
+
+      try { return JSON.parse(text); }
+      catch { throw new Error('Respuesta POST no es JSON'); }
+    }
+
+    /* =====================================================
+       CACHE LOCAL
+    ===================================================== */
+    function saveCache() {
+      try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify({
+          items: db.items, movs: db.movs, ts: Date.now()
+        }));
+        console.log('💾 Cache guardado');
+      } catch (e) { console.warn('No se pudo guardar cache:', e); }
+    }
+
+    function loadCache() {
+      try {
+        const raw = localStorage.getItem(CACHE_KEY);
+        if (!raw) return false;
+        const cache = JSON.parse(raw);
+        db.items = cache.items || [];
+        db.movs  = cache.movs  || [];
+        console.log('📦 Cache cargado:', db.items.length, 'items,', db.movs.length, 'movs');
+        return true;
+      } catch (e) {
+        console.warn('No se pudo leer cache:', e);
+        return false;
+      }
+    }
+
+    function isCacheFresh() {
+      try {
+        const raw = localStorage.getItem(CACHE_KEY);
+        if (!raw) return false;
+        const cache = JSON.parse(raw);
+        return (Date.now() - cache.ts) < CACHE_TTL;
+      } catch { return false; }
+    }
+
+    function showCacheBadge(show) {
+      const badge = document.getElementById('cache-badge');
+      if (badge) badge.style.display = show ? 'inline-flex' : 'none';
+    }
+
+    /* =====================================================
+       ESTADO DE CARGA (GLOBAL)
+    ===================================================== */
+    function setLoading(state) {
+      isLoading = state;
+
+      // Poner/quitar clase "loading" en las pestañas
+      document.querySelectorAll('.tab').forEach(tab => {
+        if (state) tab.classList.add('loading');
+        else tab.classList.remove('loading');
+      });
+
+      // Deshabilitar interacciones si estamos cargando
+      const btnAddFromInv = document.getElementById('btn-add-from-inv');
+      const btnExport = document.getElementById('btn-export');
+      const btnAddItem = document.getElementById('btn-add-item');
+
+      if (btnAddFromInv) btnAddFromInv.disabled = state;
+      if (btnExport)      btnExport.disabled = state;
+      if (btnAddItem)     btnAddItem.disabled = state;
+
+      // Deshabilitar inputs del formulario
+      ['n-code','n-desc','n-loc','n-um','n-qty'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.disabled = state;
+      });
+
+      // Pintar el estado en la pestaña activa
+      renderLoadingState();
+    }
+
+    /* Genera el HTML del spinner para inyectar en cualquier panel */
+    function loadingHTML(text = 'Cargando...', hint = '') {
+      return `
+        <div class="panel-loading">
+          <i class='bx bx-loader-circle'></i>
+          <div id="loading-text-${currentTab}">${text}</div>
+          ${hint ? `<div class="hint">${hint}</div>` : ''}
+        </div>
+      `;
+    }
+
+    /* Pinta el estado de carga en el panel activo */
+    function renderLoadingState() {
+      if (!isLoading) return;
+
+      // Inventario
+      if (currentTab === 'inv') {
+        const list = document.getElementById('list');
+        if (list && !list.querySelector('.panel-loading')) {
+          list.innerHTML = loadingHTML(
+            loadingMessages[0],
+            'La primera carga puede tardar unos segundos'
+          );
+        }
       }
 
-      try {
-        return JSON.parse(text);
-      } catch (e) {
-        throw new Error('Respuesta POST no es JSON');
+      // Movimientos
+      if (currentTab === 'mov') {
+        const container = document.getElementById('movs-container');
+        if (container) {
+          container.innerHTML = loadingHTML(
+            loadingMessages[0],
+            'Esperando datos del inventario'
+          );
+        }
+        // Ocultar botón export
+        const btnExport = document.getElementById('btn-export');
+        if (btnExport) btnExport.style.display = 'none';
+      }
+
+      // Nuevo Item
+      if (currentTab === 'new') {
+        const form = document.getElementById('new-form');
+        if (form) {
+          form.innerHTML = loadingHTML(
+            loadingMessages[0],
+            'Esperando datos del inventario'
+          );
+        }
+      }
+    }
+
+    /* Reconstruye el contenido original de cada panel (cuando termina la carga) */
+    function restorePanelsContent() {
+      // Movimientos
+      const movsContainer = document.getElementById('movs-container');
+      if (movsContainer && !document.getElementById('movs')) {
+        movsContainer.innerHTML = `
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Item</th>
+                <th>Tipo</th>
+                <th>Cant</th>
+                <th>Quién</th>
+              </tr>
+            </thead>
+            <tbody id="movs"></tbody>
+          </table>
+        `;
+        renderMovs();
+      }
+
+      // Nuevo Item
+      const newForm = document.getElementById('new-form');
+      if (newForm && !document.getElementById('n-code')) {
+        newForm.innerHTML = `
+          <label>Código (tal cual proveedor)</label>
+          <input id="n-code" placeholder="Ej: CZ09602061">
+
+          <label>Descripción completa</label>
+          <input id="n-desc" placeholder="Ej: VENTOSA FUELLE D.80 SAB80NBR_60G38_IG">
+
+          <label>Ubicación</label>
+          <input id="n-loc" placeholder="Ej: G02-04/TAV1">
+
+          <label>Unidad de medida</label>
+          <select id="n-um">
+            <option>UND</option>
+            <option>KG</option>
+            <option>LTS</option>
+            <option>MTS</option>
+          </select>
+
+          <label>Cantidad inicial</label>
+          <input id="n-qty" type="number" value="0" min="0">
+
+          <button class="btn btn-in" id="btn-add-item" style="width:100%" onclick="addItem()">
+            <i class='bx bx-save'></i> Guardar item
+          </button>
+        `;
+      }
+
+      // Botón export
+      const btnExport = document.getElementById('btn-export');
+      if (btnExport) btnExport.style.display = '';
+    }
+
+    /* =====================================================
+       MENSAJES DE CARGA ROTATIVOS
+    ===================================================== */
+    function startLoadingMessages() {
+      let i = 0;
+
+      // Actualizar TODOS los textos de carga visibles
+      const updateAll = () => {
+        document.querySelectorAll('[id^="loading-text"]').forEach(el => {
+          el.textContent = loadingMessages[i];
+        });
+      };
+
+      updateAll();
+
+      loadingInterval = setInterval(() => {
+        i = (i + 1) % loadingMessages.length;
+        updateAll();
+      }, 2500);
+    }
+
+    function stopLoadingMessages() {
+      if (loadingInterval) {
+        clearInterval(loadingInterval);
+        loadingInterval = null;
       }
     }
 
     /* =====================================================
-       CARGAR DATOS DESDE GOOGLE SHEETS
+       CARGAR BASE DE DATOS
     ===================================================== */
     async function loadDatabase() {
+      // 1️⃣ Cache → render inmediato
+      const hasCache = loadCache();
+      if (hasCache && db.items.length) {
+        render();
+        renderMovs();
+        showCacheBadge(true);
+        console.log('⚡ Renderizado desde cache');
+      }
+
+      // 2️⃣ Cache fresco → no consultar
+      if (hasCache && isCacheFresh()) {
+        console.log('✅ Cache fresco, no se consulta backend');
+        return;
+      }
+
+      // 3️⃣ Consultar backend
+      setLoading(true);
+      startLoadingMessages();
+
       try {
         const data = await apiGet('getDatabase');
-        console.log('✅ Datos recibidos:', data);
+        console.log('✅ Datos frescos recibidos:',
+          (data.items || []).length, 'items,',
+          (data.movs || []).length, 'movs'
+        );
 
         if (data.items) db.items = data.items;
         if (data.movs)  db.movs  = data.movs;
 
-        // Normalizar qty a número
-        db.items = db.items.map(i => ({
-          ...i,
-          qty: Number(i.qty) || 0
-        }));
+        db.items = db.items.map(i => ({ ...i, qty: Number(i.qty) || 0 }));
 
+        saveCache();
+        showCacheBadge(false);
+
+        setLoading(false);        // 👈 desactiva spinner ANTES de repintar
+        restorePanelsContent();   // 👈 reconstruye los paneles si estaban en loading
         render();
-      } catch (error) {
-        console.error('❌ Error cargando Google Sheets:', error);
-        toast(error.message, true);
+        renderMovs();
 
-        document.getElementById('list').innerHTML = `
-          <div style="color:#ff5555;text-align:center;padding:20px;font-size:.85rem">
-            <i class='bx bx-error-circle' style="font-size:2rem;display:block;margin-bottom:8px"></i>
-            ${error.message}
-          </div>
-        `;
+      } catch (error) {
+        console.error('❌ Error cargando datos:', error);
+        setLoading(false);
+
+        if (db.items.length) {
+          toast('Usando datos en caché (sin conexión)', true);
+          showCacheBadge(true);
+          restorePanelsContent();
+          render();
+          renderMovs();
+        } else {
+          toast(error.message, true);
+          document.getElementById('list').innerHTML = `
+            <div style="color:#ff5555;text-align:center;padding:20px;font-size:.85rem">
+              <i class='bx bx-error-circle' style="font-size:2rem;display:block;margin-bottom:8px"></i>
+              ${error.message}
+              <br><br>
+              <button class="btn btn-in" onclick="forceRefresh()" style="max-width:200px;margin:auto">
+                <i class='bx bx-refresh'></i> Reintentar
+              </button>
+            </div>
+          `;
+        }
+      } finally {
+        stopLoadingMessages();
       }
     }
 
     /* =====================================================
-       CAMBIAR PESTAÑA
+       FORZAR REFRESCO
+    ===================================================== */
+    function forceRefresh() {
+      localStorage.removeItem(CACHE_KEY);
+      db.items = [];
+      db.movs = [];
+      toast('Recargando datos frescos...', false);
+      loadDatabase();
+    }
+    window.forceRefresh = forceRefresh;
+
+    /* =====================================================
+       CAMBIAR PESTAÑA (PERSISTE EL ESTADO DE CARGA)
     ===================================================== */
     function showTab(id, el) {
+      currentTab = id;
+
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
 
       if (el) el.classList.add('active');
       document.getElementById('p-' + id).classList.add('active');
 
-      if (id === 'inv') render();
+      // ⚡ Si estamos cargando, mostrar spinner en la nueva pestaña
+      if (isLoading) {
+        renderLoadingState();
+        startLoadingMessages(); // reiniciar rotación si se detuvo
+      } else {
+        // Carga completa → mostrar contenido normal
+        restorePanelsContent();
+        if (id === 'inv') render();
+        if (id === 'mov') renderMovs();
+      }
     }
 
     function clickTabMov(e) {
       showTab('mov', e.target);
-      renderMovs();
     }
 
     /* =====================================================
        MOSTRAR INVENTARIO
     ===================================================== */
     function render() {
+      // Si está cargando, no tocar
+      if (isLoading) return;
+
       const q = document.getElementById('search').value.toLowerCase();
       const list = document.getElementById('list');
       list.innerHTML = '';
@@ -528,6 +952,52 @@
     }
 
     /* =====================================================
+       MOSTRAR MOVIMIENTOS
+    ===================================================== */
+    function renderMovs() {
+      if (isLoading) return;
+
+      const t = document.getElementById('movs');
+      if (!t) return;
+
+      t.innerHTML = '';
+
+      if (!db.movs.length) {
+        t.innerHTML = `
+          <tr>
+            <td colspan="5" style="color:var(--dim);text-align:center">
+              Sin movimientos aún
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      db.movs.forEach(m => {
+        const fecha   = normalizeDate(pick(m, ['date', 'fecha', 'Fecha', 'Date']));
+        const code    = pick(m, ['code', 'codigo', 'código', 'Codigo', 'Código', 'item', 'Item']);
+        const tipoRaw = pick(m, ['type', 'tipo', 'Tipo', 'Type']);
+        const tipo    = normalizeType(tipoRaw);
+        const qty     = pick(m, ['qty', 'cantidad', 'Cantidad', 'Qty', 'Quantity']);
+        const who     = pick(m, ['who', 'quien', 'quién', 'Quien', 'Quién', 'nombre', 'Nombre', 'usuario', 'Usuario']);
+
+        const isRetiro = tipo === 'RETIRO';
+        const color = isRetiro ? '#ff5555' : 'var(--lime)';
+        const signo = isRetiro ? '−' : '+';
+
+        t.innerHTML += `
+          <tr>
+            <td>${fecha}</td>
+            <td>${code || '—'}</td>
+            <td style="color:${color};font-weight:bold">${tipo}</td>
+            <td>${signo}${qty || 0}</td>
+            <td>${who || '—'}</td>
+          </tr>
+        `;
+      });
+    }
+
+    /* =====================================================
        ABRIR MODAL
     ===================================================== */
     function openModal(type, code) {
@@ -558,7 +1028,7 @@
     }
 
     /* =====================================================
-       CONFIRMAR MOVIMIENTO (CON FEEDBACK VISUAL)
+       CONFIRMAR MOVIMIENTO
     ===================================================== */
     async function confirmMov() {
       const qty = parseInt(document.getElementById('m-qty').value);
@@ -571,7 +1041,6 @@
         return toast('Stock insuficiente (máx ' + movItem.qty + ')', true);
       }
 
-      // 🔒 Bloquear botón mientras se guarda
       const btn = document.getElementById('m-confirm');
       const originalHTML = btn.innerHTML;
       btn.disabled = true;
@@ -592,7 +1061,6 @@
           return toast(result.message || 'No se pudo registrar', true);
         }
 
-        // ✅ Backend confirmó → actualizar local
         movItem.qty += movType === 'RETIRO' ? -qty : qty;
 
         db.movs.unshift({
@@ -603,16 +1071,18 @@
           who: who
         });
 
+        saveCache();
         closeModal();
-        toast(
-          '✅ ' + movType + ' guardado en Google Sheets: ' + qty + ' × ' + movItem.code,
-          false
-        );
+        toast('✅ ' + movType + ' guardado: ' + qty + ' × ' + movItem.code, false);
+
         render();
+        renderMovs();
 
       } catch (error) {
         console.error(error);
         toast('Error: ' + error.message, true);
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
       } finally {
         btn.disabled = false;
         btn.innerHTML = originalHTML;
@@ -637,7 +1107,7 @@
         return toast('Ese código ya existe en esa ubicación', true);
       }
 
-      const btn = event.target;
+      const btn = document.getElementById('btn-add-item');
       const originalHTML = btn.innerHTML;
       btn.disabled = true;
       btn.innerHTML = "<i class='bx bx-loader-circle bx-spin'></i> Guardando...";
@@ -666,6 +1136,7 @@
           });
         }
 
+        saveCache();
         toast('✅ Item guardado en Google Sheets', false);
 
         ['n-code', 'n-desc', 'n-loc'].forEach(id => {
@@ -673,7 +1144,7 @@
         });
         document.getElementById('n-qty').value = 0;
 
-        showTab('inv', document.querySelector('.tab'));
+        showTab('inv', document.getElementById('tab-inv'));
         render();
 
       } catch (error) {
@@ -686,50 +1157,21 @@
     }
 
     /* =====================================================
-       MOSTRAR MOVIMIENTOS
-    ===================================================== */
-    function renderMovs() {
-      const t = document.getElementById('movs');
-      t.innerHTML = '';
-
-      if (!db.movs.length) {
-        t.innerHTML = `
-          <tr>
-            <td colspan="5" style="color:var(--dim);text-align:center">
-              Sin movimientos aún
-            </td>
-          </tr>
-        `;
-        return;
-      }
-
-      db.movs.forEach(m => {
-        t.innerHTML += `
-          <tr>
-            <td>${m.date || ''}</td>
-            <td>${m.code || ''}</td>
-            <td style="color:${m.type === 'RETIRO' ? '#ff5555' : 'var(--lime)'}">${m.type || ''}</td>
-            <td>${m.type === 'RETIRO' ? '−' : '+'}${m.qty || 0}</td>
-            <td>${m.who || ''}</td>
-          </tr>
-        `;
-      });
-    }
-
-    /* =====================================================
        EXPORTAR MOVIMIENTOS A EXCEL
     ===================================================== */
     function exportData() {
+      if (isLoading) return toast('Esperando a que carguen los datos...', true);
+
       if (!db.movs.length) {
         return toast('No hay movimientos para exportar', true);
       }
 
       const movimientos = db.movs.map(m => ({
-        'Fecha': m.date,
-        'Código': m.code,
-        'Tipo': m.type,
-        'Cantidad': m.qty,
-        'Quién': m.who
+        'Fecha':    normalizeDate(pick(m, ['date', 'fecha', 'Fecha', 'Date'])),
+        'Código':   pick(m, ['code', 'codigo', 'código', 'Codigo']),
+        'Tipo':     normalizeType(pick(m, ['type', 'tipo', 'Tipo'])),
+        'Cantidad': pick(m, ['qty', 'cantidad', 'Cantidad', 'Qty']),
+        'Quién':    pick(m, ['who', 'quien', 'quién', 'Quien', 'nombre', 'Usuario'])
       }));
 
       const wb = XLSX.utils.book_new();
