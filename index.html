@@ -10,64 +10,201 @@
 
   <style>
     :root {
-      --bg: #111214;
+      --bg: #0f1012;
+      --bg-2: #141518;
       --card: #1a1c1f;
+      --card-2: #1f2125;
       --border: #2a2c30;
+      --border-2: #35383d;
       --txt: #e8e8e8;
       --dim: #9aa0a6;
+      --dim-2: #6b7076;
       --lime: #CCFF00;
+      --lime-glow: rgba(204, 255, 0, .15);
+      --red: #ff5555;
+      --red-glow: rgba(255, 85, 85, .15);
+      --radius: 12px;
+      --radius-sm: 8px;
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Arial, sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
 
     body {
-      background: var(--bg);
+      background: radial-gradient(circle at top, #16181c 0%, var(--bg) 60%);
+      background-attachment: fixed;
       color: var(--txt);
       max-width: 600px;
       margin: 0 auto;
-      padding: 16px;
+      padding: 20px 16px 40px;
+      min-height: 100vh;
     }
 
-    h1 { font-size: 1.3rem; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
-    h1 i { color: var(--lime); font-size: 1.5rem; }
+    /* ============ HEADER ============ */
+    .app-header {
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
 
-    .sub {
+    .app-header .top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .app-header h1 {
+      font-size: 1.4rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      letter-spacing: -.3px;
+    }
+
+    .app-header h1 i {
+      color: var(--lime);
+      font-size: 1.7rem;
+      filter: drop-shadow(0 0 8px var(--lime-glow));
+    }
+
+    .version-badge {
+      font-size: .65rem;
+      font-weight: 700;
+      color: var(--lime);
+      background: var(--lime-glow);
+      border: 1px solid rgba(204, 255, 0, .25);
+      padding: 3px 8px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      white-space: nowrap;
+    }
+
+    /* Descripción breve con acciones a la derecha */
+    .app-desc {
       color: var(--dim);
       font-size: .8rem;
-      margin-bottom: 14px;
+      line-height: 1.5;
       display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px 12px;
+    }
+
+    .app-desc .feature {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--dim);
+      font-size: .78rem;
+    }
+
+    .app-desc .feature i {
+      color: var(--lime);
+      font-size: .9rem;
+    }
+
+    .app-desc .feature.retiro i { color: var(--red); }
+
+    /* Acciones alineadas a la derecha */
+    .desc-actions {
+      margin-left: auto;
+      display: inline-flex;
       align-items: center;
       gap: 6px;
     }
 
-    .tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+    .cache-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: .7rem;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: var(--lime-glow);
+      color: var(--lime);
+      border: 1px solid rgba(204, 255, 0, .2);
+    }
+
+    .refresh-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--dim);
+      border-radius: 6px;
+      padding: 3px 9px;
+      font-size: .7rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all .2s;
+    }
+
+    .refresh-btn:hover {
+      color: var(--lime);
+      border-color: var(--lime);
+      background: var(--lime-glow);
+    }
+
+    /* ============ TABS ============ */
+    .tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 16px;
+      padding: 4px;
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
 
     .tab {
       flex: 1;
-      padding: 10px;
-      border: 1px solid var(--border);
-      background: var(--card);
+      padding: 10px 8px;
+      border: 1px solid transparent;
+      background: transparent;
       color: var(--dim);
-      border-radius: 8px;
+      border-radius: var(--radius-sm);
       cursor: pointer;
-      font-size: .85rem;
+      font-size: .82rem;
       text-align: center;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
-      transition: all .2s;
+      transition: all .2s ease;
       position: relative;
+      font-weight: 500;
+      user-select: none;
     }
 
-    .tab.active { color: #000; background: var(--lime); border-color: var(--lime); font-weight: bold; }
+    .tab:hover:not(.active) {
+      color: var(--txt);
+      background: var(--card);
+    }
+
+    .tab.active {
+      color: #000;
+      background: var(--lime);
+      border-color: var(--lime);
+      font-weight: 700;
+      box-shadow: 0 4px 14px var(--lime-glow);
+    }
+
     .tab.active i { color: #000; }
 
     .tab.loading::after {
       content: '';
       position: absolute;
       top: 4px;
-      right: 4px;
+      right: 6px;
       width: 6px;
       height: 6px;
       border-radius: 50%;
@@ -81,14 +218,23 @@
       50%      { opacity: .4; transform: scale(1.3); }
     }
 
+    /* ============ PANELS ============ */
     .panel { display: none; position: relative; }
-    .panel.active { display: block; }
+    .panel.active {
+      display: block;
+      animation: fadeIn .25s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
 
     .panel-loading-overlay {
       position: absolute;
       inset: 0;
-      background: rgba(17, 18, 20, .85);
-      backdrop-filter: blur(2px);
+      background: rgba(15, 16, 18, .88);
+      backdrop-filter: blur(3px);
       display: none;
       flex-direction: column;
       align-items: center;
@@ -96,7 +242,7 @@
       text-align: center;
       padding: 20px;
       z-index: 5;
-      border-radius: 10px;
+      border-radius: var(--radius);
     }
 
     .panel-loading-overlay.show { display: flex; }
@@ -106,6 +252,7 @@
       color: var(--lime);
       animation: spin 1s linear infinite;
       margin-bottom: 12px;
+      filter: drop-shadow(0 0 12px var(--lime-glow));
     }
 
     .panel-loading-overlay .msg { font-size: .9rem; color: var(--txt); }
@@ -118,140 +265,293 @@
 
     .bx-spin { animation: spin 1s linear infinite; display: inline-block; }
 
-    .search-wrap { position: relative; margin-bottom: 12px; }
+    /* ============ SEARCH ============ */
+    .search-wrap { position: relative; margin-bottom: 14px; }
 
     .search-wrap i {
       position: absolute;
-      left: 12px;
+      left: 14px;
       top: 50%;
       transform: translateY(-50%);
       color: var(--dim);
       pointer-events: none;
+      transition: color .2s;
     }
 
     .search {
       width: 100%;
-      padding: 12px 12px 12px 38px;
+      padding: 13px 14px 13px 42px;
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: var(--radius-sm);
       background: var(--card);
       color: var(--txt);
-      font-size: .95rem;
+      font-size: .92rem;
+      transition: all .2s;
+      outline: none;
     }
 
+    .search:focus {
+      border-color: var(--lime);
+      box-shadow: 0 0 0 3px var(--lime-glow);
+    }
+
+    .search-wrap:focus-within i { color: var(--lime); }
+
+    /* ============ ITEMS ============ */
     .item {
-      background: var(--card);
+      background: linear-gradient(180deg, var(--card-2) 0%, var(--card) 100%);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px;
+      border-radius: var(--radius);
+      padding: 14px;
       margin-bottom: 10px;
+      transition: all .2s ease;
+      position: relative;
+      overflow: hidden;
     }
 
-    .item .code { color: var(--lime); font-size: .75rem; font-weight: bold; display: flex; align-items: center; gap: 6px; }
-    .item .desc { font-size: .9rem; margin: 4px 0; }
+    .item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 3px;
+      height: 100%;
+      background: var(--lime);
+      opacity: 0;
+      transition: opacity .2s;
+    }
+
+    .item:hover {
+      border-color: var(--border-2);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, .3);
+    }
+
+    .item:hover::before { opacity: 1; }
+
+    .item .code {
+      color: var(--lime);
+      font-size: .72rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      letter-spacing: .3px;
+      text-transform: uppercase;
+    }
+
+    .item .desc {
+      font-size: .9rem;
+      margin: 6px 0 10px;
+      line-height: 1.35;
+      color: var(--txt);
+    }
 
     .item .meta {
       color: var(--dim);
-      font-size: .75rem;
+      font-size: .72rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px dashed var(--border);
     }
 
-    .item .meta .loc { display: flex; align-items: center; gap: 4px; }
-    .stock { font-size: 1.1rem; font-weight: bold; display: flex; align-items: center; gap: 6px; }
+    .item .meta .loc {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
 
+    .item .meta .loc i { color: var(--dim-2); }
+
+    .stock {
+      font-size: 1.15rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--lime);
+    }
+
+    .stock i { font-size: 1rem; }
+
+    /* ============ BOTONES ============ */
     .btns { display: flex; gap: 8px; }
 
     .btn {
       flex: 1;
-      padding: 10px;
+      padding: 11px;
       border: none;
-      border-radius: 8px;
-      font-size: .85rem;
-      font-weight: bold;
+      border-radius: var(--radius-sm);
+      font-size: .82rem;
+      font-weight: 700;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
-      transition: opacity .2s;
+      transition: all .18s ease;
+      letter-spacing: .2px;
     }
 
-    .btn:disabled { opacity: .6; cursor: not-allowed; }
-    .btn-out { background: #ff5555; color: #fff; }
-    .btn-in { background: var(--lime); color: #000; }
+    .btn:disabled { opacity: .55; cursor: not-allowed; }
+
+    .btn:not(:disabled):active { transform: scale(.97); }
+
+    .btn-out {
+      background: linear-gradient(180deg, #ff6666 0%, #ff4444 100%);
+      color: #fff;
+      box-shadow: 0 3px 12px var(--red-glow);
+    }
+    .btn-out:not(:disabled):hover {
+      box-shadow: 0 5px 18px rgba(255, 85, 85, .35);
+      filter: brightness(1.08);
+    }
+
+    .btn-in {
+      background: linear-gradient(180deg, #d8ff33 0%, var(--lime) 100%);
+      color: #000;
+      box-shadow: 0 3px 12px var(--lime-glow);
+    }
+    .btn-in:not(:disabled):hover {
+      box-shadow: 0 5px 18px rgba(204, 255, 0, .3);
+      filter: brightness(1.05);
+    }
 
     .btn-add {
       background: var(--card);
       color: var(--lime);
-      border: 1px solid var(--lime);
+      border: 1px dashed rgba(204, 255, 0, .4);
       width: 100%;
       padding: 14px;
-      border-radius: 10px;
-      font-size: .95rem;
-      font-weight: bold;
+      border-radius: var(--radius);
+      font-size: .9rem;
+      font-weight: 700;
       cursor: pointer;
-      margin-top: 6px;
+      margin-top: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
+      transition: all .2s;
+    }
+
+    .btn-add:not(:disabled):hover {
+      background: var(--lime-glow);
+      border-color: var(--lime);
+      transform: translateY(-1px);
     }
 
     .btn-add:disabled { opacity: .5; cursor: not-allowed; }
 
+    /* ============ INPUTS ============ */
     input, select {
       width: 100%;
-      padding: 12px;
+      padding: 12px 14px;
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: var(--radius-sm);
       background: var(--card);
       color: var(--txt);
-      margin-bottom: 10px;
-      font-size: .95rem;
+      margin-bottom: 12px;
+      font-size: .92rem;
+      transition: all .2s;
+      outline: none;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--lime);
+      box-shadow: 0 0 0 3px var(--lime-glow);
+      background: var(--card-2);
     }
 
     input:disabled, select:disabled { opacity: .5; cursor: not-allowed; }
-    label { font-size: .8rem; color: var(--dim); display: block; margin-bottom: 4px; }
 
-    table { width: 100%; border-collapse: collapse; font-size: .75rem; }
-    th, td { padding: 8px 6px; border-bottom: 1px solid var(--border); text-align: left; }
-    th { color: var(--dim); }
+    label {
+      font-size: .75rem;
+      color: var(--dim);
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 600;
+      letter-spacing: .3px;
+      text-transform: uppercase;
+    }
 
+    /* ============ TABLA ============ */
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: .75rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+
+    th {
+      color: var(--dim);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: .68rem;
+      letter-spacing: .5px;
+      background: var(--bg-2);
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    tbody tr:hover { background: var(--card-2); }
+
+    /* ============ MODAL ============ */
     .modal {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, .8);
+      background: rgba(0, 0, 0, .85);
+      backdrop-filter: blur(4px);
       display: none;
       align-items: center;
       justify-content: center;
       padding: 20px;
       z-index: 10;
+      animation: fadeIn .2s ease;
     }
 
     .modal.open { display: flex; }
 
     .modal-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 20px;
+      background: linear-gradient(180deg, var(--card-2) 0%, var(--card) 100%);
+      border: 1px solid var(--border-2);
+      border-radius: 16px;
+      padding: 22px;
       width: 100%;
       max-width: 400px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .6);
+      animation: slideUp .25s ease;
     }
 
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px) scale(.96); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* ============ TOAST ============ */
     .toast {
       position: fixed;
-      bottom: 20px;
+      bottom: 24px;
       left: 50%;
       transform: translateX(-50%);
-      background: var(--lime);
+      background: linear-gradient(180deg, #d8ff33 0%, var(--lime) 100%);
       color: #000;
-      padding: 12px 20px;
-      border-radius: 10px;
-      font-weight: bold;
+      padding: 13px 22px;
+      border-radius: var(--radius);
+      font-weight: 700;
       font-size: .85rem;
       display: none;
       z-index: 20;
@@ -259,11 +559,19 @@
       gap: 8px;
       max-width: 90%;
       text-align: center;
+      box-shadow: 0 10px 30px rgba(204, 255, 0, .25);
+      animation: slideUp .25s ease;
     }
 
-    .toast.warn { background: #ff5555; color: #fff; }
+    .toast.warn {
+      background: linear-gradient(180deg, #ff6666 0%, #ff4444 100%);
+      color: #fff;
+      box-shadow: 0 10px 30px rgba(255, 85, 85, .3);
+    }
 
+    /* ============ EXPORT ============ */
     .export-row { display: flex; gap: 8px; margin-top: 14px; }
+
     .export-row .btn {
       background: var(--card);
       color: var(--txt);
@@ -271,34 +579,33 @@
       width: 100%;
     }
 
-    .cache-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      font-size: .7rem;
-      padding: 2px 8px;
-      border-radius: 10px;
-      background: rgba(204, 255, 0, .1);
+    .export-row .btn:hover {
+      border-color: var(--lime);
       color: var(--lime);
-      margin-left: auto;
+      background: var(--lime-glow);
     }
 
-    .refresh-btn {
-      margin-left: 6px;
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--dim);
-      border-radius: 6px;
-      padding: 2px 8px;
+    /* ============ SYNC ============ */
+    .sync-indicator {
+      position: fixed;
+      top: 12px;
+      right: 12px;
+      background: var(--card);
+      border: 1px solid var(--border-2);
+      color: var(--lime);
+      border-radius: var(--radius-sm);
+      padding: 5px 12px;
       font-size: .7rem;
-      cursor: pointer;
-      display: inline-flex;
+      display: none;
       align-items: center;
-      gap: 4px;
+      gap: 6px;
+      z-index: 30;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, .4);
     }
 
-    .refresh-btn:hover { color: var(--lime); border-color: var(--lime); }
+    .sync-indicator.show { display: inline-flex; }
 
+    /* ============ INITIAL LOADING ============ */
     .initial-loading {
       text-align: center;
       padding: 40px 20px;
@@ -312,47 +619,56 @@
       animation: spin 1s linear infinite;
       display: block;
       margin-bottom: 12px;
+      filter: drop-shadow(0 0 12px var(--lime-glow));
     }
 
-    .initial-loading .hint { font-size: .75rem; margin-top: 8px; }
-
-    /* Indicador sutil de sincronización */
-    .sync-indicator {
-      position: fixed;
-      top: 8px;
-      right: 8px;
-      background: var(--card);
-      border: 1px solid var(--border);
-      color: var(--lime);
-      border-radius: 6px;
-      padding: 4px 10px;
-      font-size: .7rem;
-      display: none;
-      align-items: center;
-      gap: 6px;
-      z-index: 30;
-      opacity: .9;
+    .initial-loading .hint {
+      font-size: .75rem;
+      margin-top: 8px;
+      color: var(--dim-2);
     }
 
-    .sync-indicator.show { display: inline-flex; }
+    /* Responsive */
+    @media (max-width: 420px) {
+      .app-header h1 { font-size: 1.2rem; }
+      .app-desc .feature { font-size: .7rem; }
+      .tab { font-size: .75rem; padding: 9px 4px; }
+      .desc-actions { width: 100%; justify-content: flex-end; margin-left: 0; margin-top: 4px; }
+    }
   </style>
 </head>
 <body>
 
-  <h1>
-    <i class='bx bx-package'></i> Inventario Almacén
-  </h1>
+  <!-- ============ HEADER ============ -->
+  <header class="app-header">
+    <div class="top-row">
+      <h1>
+        <i class='bx bx-package'></i> Inventario Almacén
+      </h1>
+      <span class="version-badge">Demo · v0.7</span>
+    </div>
 
-  <div class="sub">
-    <i class='bx bx-qr'></i> Demo QR · v0.6 · datos guardados en Google Sheets
-    <span class="cache-badge" id="cache-badge" style="display:none">
-      <i class='bx bx-hdd'></i> caché
-    </span>
-    <button class="refresh-btn" onclick="forceRefresh()" title="Recargar datos frescos">
-      <i class='bx bx-refresh'></i>
-    </button>
-  </div>
+    <!-- Descripción breve + botón Actualizar -->
+    <div class="app-desc">
+      <span class="feature">
+        <i class='bx bx-package'></i> Control de stock de items
+      </span>
+      <span class="feature retiro">
+        <i class='bx bx-transfer'></i> Ingresos y salidas
+      </span>
 
+      <span class="desc-actions">
+        <span class="cache-badge" id="cache-badge" style="display:none">
+          <i class='bx bx-hdd'></i> caché
+        </span>
+        <button class="refresh-btn" onclick="forceRefresh()" title="Recargar datos frescos">
+          <i class='bx bx-refresh'></i> Actualizar
+        </button>
+      </span>
+    </div>
+  </header>
+
+  <!-- ============ TABS ============ -->
   <div class="tabs">
     <div class="tab active" id="tab-inv" onclick="showTab('inv', this)">
       <i class='bx bx-box'></i> Inventario
@@ -365,7 +681,7 @@
     </div>
   </div>
 
-  <!-- ===================== PANEL INVENTARIO ===================== -->
+  <!-- ============ PANEL INVENTARIO ============ -->
   <div class="panel active" id="p-inv">
     <div class="search-wrap">
       <i class='bx bx-search'></i>
@@ -391,7 +707,7 @@
     </div>
   </div>
 
-  <!-- ===================== PANEL MOVIMIENTOS ===================== -->
+  <!-- ============ PANEL MOVIMIENTOS ============ -->
   <div class="panel" id="p-mov">
     <table>
       <thead>
@@ -419,7 +735,7 @@
     </div>
   </div>
 
-  <!-- ===================== PANEL NUEVO ITEM ===================== -->
+  <!-- ============ PANEL NUEVO ITEM ============ -->
   <div class="panel" id="p-new">
     <label>Código (tal cual proveedor)</label>
     <input id="n-code" placeholder="Ej: CZ09602061">
@@ -452,7 +768,7 @@
     </div>
   </div>
 
-  <!-- MODAL -->
+  <!-- ============ MODAL ============ -->
   <div class="modal" id="modal">
     <div class="modal-card">
       <div class="code" id="m-code" style="color:var(--lime);font-size:.8rem;font-weight:bold"></div>
@@ -474,10 +790,10 @@
     </div>
   </div>
 
-  <!-- TOAST -->
+  <!-- ============ TOAST ============ -->
   <div class="toast" id="toast"></div>
 
-  <!-- Indicador de sincronización en background -->
+  <!-- ============ SYNC INDICATOR ============ -->
   <div class="sync-indicator" id="sync-indicator">
     <i class='bx bx-loader-circle bx-spin'></i> Sincronizando...
   </div>
@@ -489,15 +805,14 @@
     const API_URL = 'https://script.google.com/macros/s/AKfycby3mkECqJKTyYYht-nibvx43QEiXw_KRoEIO9275DJxpQVeXBpIEUGMNqqixQj7F1QL/exec';
 
     const CACHE_KEY = 'inventario_cache_v1';
-    const CACHE_TTL = 1000 * 60 * 2; // 2 minutos (antes 5)
+    const CACHE_TTL = 1000 * 60 * 2; // 2 minutos
 
     let db = { items: [], movs: [] };
     let movType = null;
     let movItem = null;
 
-    /* Estado global */
-    let isLoading = false;       // true solo en la primera carga sin cache
-    let isSyncing = false;       // true mientras revalida en background
+    let isLoading = false;
+    let isSyncing = false;
     let loadingInterval = null;
 
     const loadingMessages = [
@@ -549,7 +864,6 @@
           const response = await fetch(url, { ...options, signal: controller.signal });
           clearTimeout(timer);
 
-          // Reintentar solo en errores transitorios
           if ((response.status === 404 || response.status >= 500) && attempt < retries) {
             await new Promise(r => setTimeout(r, delayMs * attempt));
             continue;
@@ -593,7 +907,7 @@
     }
 
     /* =====================================================
-       CACHE LOCAL (localStorage)
+       CACHE LOCAL
     ===================================================== */
     function saveCache() {
       try {
@@ -633,7 +947,7 @@
     }
 
     /* =====================================================
-       ESTADO DE CARGA (solo primera vez)
+       ESTADO DE CARGA
     ===================================================== */
     function setTabsLoading(state) {
       ['tab-inv', 'tab-mov', 'tab-new'].forEach(id => {
@@ -681,7 +995,6 @@
       }
     }
 
-    /* Activa/desactiva el bloqueo total de UI (solo 1ª carga) */
     function setLoading(state) {
       if (isLoading === state) return;
       isLoading = state;
@@ -695,31 +1008,27 @@
     }
 
     /* =====================================================
-       CARGAR BASE DE DATOS (CACHE-FIRST + BACKGROUND SYNC)
+       CARGAR BASE DE DATOS
     ===================================================== */
     async function loadDatabase() {
       const hasCache = loadCache();
       const cacheWasFresh = isCacheFresh();
 
-      // 1️⃣ Si hay cache → render INMEDIATO sin bloquear
       if (hasCache && db.items.length) {
         render();
         renderMovs();
         showCacheBadge(true);
 
-        // Si el cache es fresco, no sincronizar
         if (cacheWasFresh) {
           console.log('✅ Cache fresco, no se revalida');
           return;
         }
 
-        // Cache viejo → revalidar en BACKGROUND sin bloquear
-        console.log('🔄 Revalidando en background (no bloquea UI)');
+        console.log('🔄 Revalidando en background');
         syncInBackground();
         return;
       }
 
-      // 2️⃣ Sin cache → bloqueo total con spinner (solo 1ª vez)
       console.log('🆕 Primera carga sin cache');
       setLoading(true);
 
@@ -756,7 +1065,6 @@
       }
     }
 
-    /* Revalidación silenciosa en background (NO bloquea la UI) */
     async function syncInBackground() {
       if (isSyncing) return;
       isSyncing = true;
@@ -773,13 +1081,11 @@
         saveCache();
         showCacheBadge(false);
 
-        // Actualizar la UI SIN bloquear
         render();
         renderMovs();
 
       } catch (error) {
         console.warn('⚠️ Sync background falló:', error.message);
-        // No molestamos al usuario. Ya tiene cache.
       } finally {
         isSyncing = false;
         showSyncIndicator(false);
@@ -808,7 +1114,6 @@
       if (el) el.classList.add('active');
       document.getElementById('p-' + id).classList.add('active');
 
-      // Solo renderizamos si NO estamos en carga inicial bloqueante
       if (!isLoading) {
         if (id === 'inv') render();
         if (id === 'mov') renderMovs();
@@ -816,7 +1121,7 @@
     }
 
     /* =====================================================
-       MOSTRAR INVENTARIO
+       RENDER INVENTARIO
     ===================================================== */
     function render() {
       const q = document.getElementById('search').value.toLowerCase();
@@ -868,7 +1173,7 @@
     }
 
     /* =====================================================
-       MOSTRAR MOVIMIENTOS
+       RENDER MOVIMIENTOS
     ===================================================== */
     function renderMovs() {
       const t = document.getElementById('movs');
@@ -895,7 +1200,7 @@
         const who     = pick(m, ['who', 'quien', 'quién', 'Quien', 'Quién', 'nombre', 'Nombre', 'usuario', 'Usuario']);
 
         const isRetiro = tipo === 'RETIRO';
-        const color = isRetiro ? '#ff5555' : 'var(--lime)';
+        const color = isRetiro ? 'var(--red)' : 'var(--lime)';
         const signo = isRetiro ? '−' : '+';
 
         t.innerHTML += `
@@ -911,7 +1216,7 @@
     }
 
     /* =====================================================
-       ABRIR / CERRAR MODAL
+       MODAL
     ===================================================== */
     function openModal(type, code) {
       movType = type;
@@ -941,7 +1246,6 @@
 
     /* =====================================================
        CONFIRMAR MOVIMIENTO (OPTIMISTIC UI)
-       → Actualiza la UI al instante, sincroniza en background
     ===================================================== */
     async function confirmMov() {
       const qty = parseInt(document.getElementById('m-qty').value);
@@ -954,11 +1258,10 @@
         return toast('Stock insuficiente (máx ' + movItem.qty + ')', true);
       }
 
-      // ⚡ Guardar estado anterior por si hay que revertir
       const prevQty = Number(movItem.qty);
       const prevMovs = [...db.movs];
 
-      // ⚡ 1. Actualizar UI AL INSTANTE (optimistic)
+      // Optimistic
       movItem.qty = prevQty + (movType === 'RETIRO' ? -qty : qty);
 
       const newMov = {
@@ -967,7 +1270,7 @@
         type: movType,
         qty: qty,
         who: who,
-        _pending: true  // marca temporal
+        _pending: true
       };
       db.movs.unshift(newMov);
 
@@ -978,7 +1281,6 @@
 
       toast('✅ ' + movType + ' registrado: ' + qty + ' × ' + movItem.code, false);
 
-      // ⚡ 2. Enviar al backend en background (sin bloquear)
       try {
         const result = await apiPost({
           action: 'movement',
@@ -992,22 +1294,20 @@
           throw new Error(result.message || 'No se pudo registrar');
         }
 
-        // ✅ Backend confirmó → quitar marca de pendiente
         delete newMov._pending;
         saveCache();
-        console.log('✅ Movimiento confirmado por backend');
+        console.log('✅ Movimiento confirmado');
 
       } catch (error) {
-        console.error('❌ Error al guardar movimiento:', error);
+        console.error('❌ Error:', error);
 
-        // 🔄 Revertir cambios locales
         movItem.qty = prevQty;
         db.movs = prevMovs;
         saveCache();
         render();
         renderMovs();
 
-        toast('❌ Error al guardar: ' + error.message, true);
+        toast('❌ Error: ' + error.message, true);
       }
     }
 
@@ -1029,11 +1329,9 @@
         return toast('Ese código ya existe en esa ubicación', true);
       }
 
-      // ⚡ Guardar estado previo
       const prevItems = [...db.items];
       const prevMovs = [...db.movs];
 
-      // ⚡ 1. Actualizar UI AL INSTANTE
       const newItem = { code, desc, loc, um, qty };
       db.items.push(newItem);
 
@@ -1050,7 +1348,6 @@
 
       saveCache();
 
-      // Limpiar formulario
       ['n-code', 'n-desc', 'n-loc'].forEach(id => {
         document.getElementById(id).value = '';
       });
@@ -1062,7 +1359,6 @@
 
       toast('✅ Item registrado: ' + code, false);
 
-      // ⚡ 2. Enviar al backend en background
       try {
         const result = await apiPost({
           action: 'addItem',
@@ -1073,24 +1369,23 @@
           throw new Error(result.message || 'No se pudo registrar');
         }
 
-        console.log('✅ Item confirmado por backend');
+        console.log('✅ Item confirmado');
 
       } catch (error) {
-        console.error('❌ Error al guardar item:', error);
+        console.error('❌ Error:', error);
 
-        // 🔄 Revertir cambios
         db.items = prevItems;
         db.movs = prevMovs;
         saveCache();
         render();
         renderMovs();
 
-        toast('❌ Error al guardar: ' + error.message, true);
+        toast('❌ Error: ' + error.message, true);
       }
     }
 
     /* =====================================================
-       EXPORTAR MOVIMIENTOS A EXCEL
+       EXPORTAR A EXCEL
     ===================================================== */
     function exportData() {
       if (!db.movs.length) {
