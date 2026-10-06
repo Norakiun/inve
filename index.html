@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Inventario Almacén - Demo</title>
+  <title>Inventario Almacén</title>
 
   <link rel="stylesheet" href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css">
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
@@ -11,9 +11,7 @@
   <style>
     :root {
       --bg: #121317;
-      --bg-2: #17191d;
       --card: #1c1e22;
-      --card-2: #212328;
       --border: #2a2c30;
       --border-2: #35383d;
       --txt: #e8e8e8;
@@ -23,121 +21,149 @@
       --lime-glow: rgba(196, 240, 0, .15);
       --red: #ff5555;
       --red-glow: rgba(255, 85, 85, .15);
-      --radius: 12px;
+      --amber: #FFB020;
+      --amber-glow: rgba(255, 176, 32, .15);
+      --blue: #4A9EFF;
+      --blue-glow: rgba(74, 158, 255, .15);
+      --radius: 10px;
       --radius-sm: 8px;
     }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Arial, sans-serif;
+    /* Modo claro */
+    body.light-mode {
+      --bg: #f5f6f8;
+      --card: #ffffff;
+      --border: #e0e2e6;
+      --border-2: #c8ccd2;
+      --txt: #1a1c1f;
+      --dim: #6b7076;
+      --dim-2: #9aa0a6;
     }
 
-    html { scroll-behavior: smooth; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
 
     body {
-      background: radial-gradient(circle at top, #1a1c20 0%, var(--bg) 60%);
-      background-attachment: fixed;
+      background: var(--bg);
       color: var(--txt);
       max-width: 600px;
       margin: 0 auto;
-      padding: 20px 16px 40px;
+      padding: 16px;
       min-height: 100vh;
+      transition: background .3s, color .3s;
     }
 
+    /* Modo compacto */
+    body.compact .item { padding: 8px; margin-bottom: 5px; }
+    body.compact .item .desc { font-size: .8rem; margin: 3px 0 6px; }
+    body.compact .item .meta { padding-bottom: 5px; margin-bottom: 5px; }
+    body.compact .item .actions .btn { padding: 7px; font-size: .75rem; }
+
     /* ============ HEADER ============ */
-    .app-header {
-      margin-bottom: 18px;
-      padding-bottom: 14px;
+    .header {
+      margin-bottom: 14px;
+      padding-bottom: 10px;
       border-bottom: 1px solid var(--border);
     }
 
-    .app-header .top-row {
+    .header .top-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 10px;
+      gap: 8px;
+      margin-bottom: 8px;
     }
 
-    .app-header h1 {
-      font-size: 1.4rem;
+    .header h1 {
+      font-size: 1.3rem;
       display: flex;
       align-items: center;
-      gap: 10px;
-      letter-spacing: -.3px;
+      gap: 8px;
     }
 
-    .app-header h1 i {
+    .header h1 i {
       color: var(--lime);
-      font-size: 1.7rem;
-      filter: drop-shadow(0 0 8px var(--lime-glow));
-    }
-
-    .version-badge {
-      font-size: .65rem;
-      font-weight: 700;
-      color: var(--lime);
-      background: var(--lime-glow);
-      border: 1px solid rgba(196, 240, 0, .25);
-      padding: 3px 8px;
-      border-radius: 20px;
-      text-transform: uppercase;
-      letter-spacing: .5px;
-      white-space: nowrap;
-    }
-
-    .app-desc {
-      color: var(--dim);
-      font-size: .8rem;
-      line-height: 1.5;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 6px 12px;
-    }
-
-    .app-desc .feature {
+      font-size: 1.5rem;
+      line-height: 1;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      justify-content: center;
+      filter: drop-shadow(0 0 6px var(--lime-glow));
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .icon-btn {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--dim);
+      border-radius: 6px;
+      padding: 5px 8px;
+      font-size: .85rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .2s;
+      line-height: 1;
+    }
+
+    .icon-btn:hover {
+      color: var(--lime);
+      border-color: var(--lime);
+    }
+
+    .icon-btn.active {
+      color: #000;
+      background: var(--lime);
+      border-color: var(--lime);
+    }
+
+    .header .sub {
       color: var(--dim);
       font-size: .78rem;
-    }
-
-    .app-desc .feature i {
-      color: var(--lime);
-      font-size: .9rem;
-    }
-
-    .app-desc .feature.retiro i { color: var(--red); }
-
-    .desc-actions {
-      margin-left: auto;
-      display: inline-flex;
+      display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
-    .cache-badge {
-      display: inline-flex;
+    .header .sub .counter {
+      color: var(--lime);
+      font-weight: 600;
+    }
+
+    .low-stock-badge {
+      display: none;
       align-items: center;
       gap: 4px;
       font-size: .7rem;
       padding: 2px 8px;
-      border-radius: 10px;
-      background: var(--lime-glow);
-      color: var(--lime);
-      border: 1px solid rgba(196, 240, 0, .2);
+      border-radius: 12px;
+      background: rgba(255, 176, 32, .15);
+      color: var(--amber);
+      border: 1px solid rgba(255, 176, 32, .35);
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .low-stock-badge.show { display: inline-flex; }
+
+    .low-stock-badge i {
+      font-size: .85rem;
+      line-height: 1;
     }
 
     .refresh-btn {
+      margin-left: auto;
       background: transparent;
       border: 1px solid var(--border);
       color: var(--dim);
       border-radius: 6px;
-      padding: 3px 9px;
+      padding: 3px 8px;
       font-size: .7rem;
       cursor: pointer;
       display: inline-flex;
@@ -149,183 +175,244 @@
     .refresh-btn:hover {
       color: var(--lime);
       border-color: var(--lime);
-      background: var(--lime-glow);
+    }
+
+    .refresh-btn i {
+      font-size: .9rem;
+      line-height: 1;
+      transition: transform .4s ease;
+    }
+
+    .refresh-btn:hover i {
+      transform: rotate(180deg);
     }
 
     /* ============ TABS ============ */
     .tabs {
       display: flex;
-      gap: 6px;
-      margin-bottom: 16px;
+      gap: 4px;
+      margin-bottom: 14px;
       padding: 4px;
-      background: var(--bg-2);
+      background: var(--card);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
+      border-radius: 10px;
+      overflow-x: auto;
     }
 
     .tab {
       flex: 1;
-      padding: 10px 8px;
-      border: 1px solid transparent;
+      min-width: 80px;
+      padding: 8px 6px;
+      border: none;
       background: transparent;
       color: var(--dim);
-      border-radius: var(--radius-sm);
+      border-radius: 6px;
       cursor: pointer;
-      font-size: .82rem;
-      text-align: center;
+      font-size: .78rem;
+      font-weight: 500;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      transition: all .2s ease;
-      position: relative;
-      font-weight: 500;
-      user-select: none;
+      gap: 4px;
+      transition: all .18s ease;
+      white-space: nowrap;
     }
 
-    .tab:hover:not(.active) {
-      color: var(--txt);
-      background: var(--card);
+    .tab i {
+      font-size: .95rem;
+      line-height: 1;
+      transition: transform .18s ease;
     }
+
+    .tab:hover:not(.active) { color: var(--txt); }
+    .tab:hover:not(.active) i { transform: scale(1.1); }
 
     .tab.active {
-      color: #000;
       background: var(--lime);
-      border-color: var(--lime);
+      color: #000;
       font-weight: 700;
-      box-shadow: 0 4px 14px var(--lime-glow);
     }
 
     .tab.active i { color: #000; }
 
-    .tab.loading::after {
-      content: '';
-      position: absolute;
-      top: 4px;
-      right: 6px;
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--lime);
-      animation: pulse 1s ease-in-out infinite;
-    }
-    .tab.active.loading::after { background: #000; }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50%      { opacity: .4; transform: scale(1.3); }
-    }
-
     /* ============ PANELS ============ */
-    .panel { display: none; position: relative; }
-    .panel.active {
-      display: block;
-      animation: fadeIn .25s ease;
-    }
+    .panel { display: none; }
+    .panel.active { display: block; animation: fadeIn .2s ease; }
 
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(4px); }
-      to   { opacity: 1; transform: translateY(0); }
+      to { opacity: 1; transform: translateY(0); }
     }
-
-    .panel-loading-overlay {
-      position: absolute;
-      inset: 0;
-      background: rgba(18, 19, 23, .88);
-      backdrop-filter: blur(3px);
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 20px;
-      z-index: 5;
-      border-radius: var(--radius);
-    }
-
-    .panel-loading-overlay.show { display: flex; }
-
-    .panel-loading-overlay i {
-      font-size: 2.2rem;
-      color: var(--lime);
-      animation: spin 1s linear infinite;
-      margin-bottom: 12px;
-      filter: drop-shadow(0 0 12px var(--lime-glow));
-    }
-
-    .panel-loading-overlay .msg { font-size: .9rem; color: var(--txt); }
-    .panel-loading-overlay .hint { font-size: .75rem; color: var(--dim); margin-top: 8px; }
-
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to   { transform: rotate(360deg); }
-    }
-
-    .bx-spin { animation: spin 1s linear infinite; display: inline-block; }
 
     /* ============ SEARCH ============ */
-    .search-wrap { position: relative; margin-bottom: 14px; }
+    .search-wrap {
+      position: relative;
+      margin-bottom: 12px;
+    }
 
-    .search-wrap i {
+    .search-wrap > i.bx-search {
       position: absolute;
       left: 14px;
       top: 50%;
       transform: translateY(-50%);
       color: var(--dim);
       pointer-events: none;
+      font-size: 1.05rem;
+      line-height: 1;
+      width: 20px;
+      height: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       transition: color .2s;
     }
 
     .search {
       width: 100%;
-      padding: 13px 14px 13px 42px;
+      padding: 12px 40px 12px 42px;
       border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
+      border-radius: 8px;
       background: var(--card);
       color: var(--txt);
       font-size: .92rem;
-      transition: all .2s;
       outline: none;
+      transition: border-color .2s;
     }
 
-    .search:focus {
+    .search:focus { border-color: var(--lime); }
+
+    .search-clear {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 26px;
+      height: 26px;
+      border: none;
+      background: transparent;
+      color: var(--dim);
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      font-size: 1.1rem;
+    }
+
+    .search-clear.show { display: flex; }
+
+    .search-clear:hover {
+      background: var(--border);
+      color: var(--txt);
+    }
+
+    /* ============ TOOLBAR (filtros y orden) ============ */
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+      align-items: center;
+    }
+
+    .toolbar .tool-btn {
+      padding: 6px 10px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--dim);
+      border-radius: 6px;
+      font-size: .72rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all .18s ease;
+    }
+
+    .toolbar .tool-btn:hover {
       border-color: var(--lime);
-      box-shadow: 0 0 0 3px var(--lime-glow);
+      color: var(--lime);
     }
 
-    .search-wrap:focus-within i { color: var(--lime); }
+    .toolbar .tool-btn.active {
+      background: var(--lime);
+      border-color: var(--lime);
+      color: #000;
+    }
+
+    .toolbar select {
+      padding: 6px 8px;
+      margin-bottom: 0;
+      width: auto;
+      min-width: 120px;
+      font-size: .72rem;
+    }
+
+    /* ============ STATUS BAR ============ */
+    .status {
+      font-size: .72rem;
+      color: var(--dim);
+      padding: 6px 4px 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .status i {
+      color: var(--lime);
+      font-size: .9rem;
+      line-height: 1;
+    }
+
+    .status strong { color: var(--lime); }
+
+    /* ============ LOADING ============ */
+    .loading {
+      text-align: center;
+      padding: 32px 20px;
+      color: var(--dim);
+      font-size: .85rem;
+    }
+
+    .loading i {
+      font-size: 1.8rem;
+      color: var(--lime);
+      display: block;
+      margin-bottom: 10px;
+      animation: spin .8s linear infinite;
+      line-height: 1;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    .bx-spin { animation: spin .8s linear infinite; display: inline-block; }
 
     /* ============ ITEMS ============ */
     .item {
-      background: linear-gradient(180deg, var(--card-2) 0%, var(--card) 100%);
+      background: var(--card);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 14px;
-      margin-bottom: 10px;
-      transition: all .2s ease;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 8px;
+      transition: all .15s ease;
       position: relative;
-      overflow: hidden;
     }
 
-    .item::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 3px;
-      height: 100%;
-      background: var(--lime);
-      opacity: 0;
-      transition: opacity .2s;
+    .item:hover { border-color: var(--border-2); }
+
+    .item.low-stock {
+      border-color: rgba(255, 176, 32, .5);
+      background: linear-gradient(180deg, rgba(255, 176, 32, .05), var(--card));
     }
 
-    .item:hover {
-      border-color: var(--border-2);
-      transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba(0, 0, 0, .3);
+    .item.inactive {
+      opacity: .5;
     }
-
-    .item:hover::before { opacity: 1; }
 
     .item .code {
       color: var(--lime);
@@ -333,256 +420,292 @@
       font-weight: 700;
       display: flex;
       align-items: center;
-      gap: 6px;
-      letter-spacing: .3px;
-      text-transform: uppercase;
+      gap: 5px;
+      margin-bottom: 4px;
+      cursor: pointer;
+      user-select: none;
+      transition: opacity .15s;
+    }
+
+    .item .code:hover { opacity: .7; }
+
+    .item .code .code-actions {
+      margin-left: auto;
+      display: flex;
+      gap: 3px;
+      opacity: 0;
+      transition: opacity .2s;
+    }
+
+    .item:hover .code-actions { opacity: 1; }
+
+    .item .code .mini-btn {
+      background: transparent;
+      border: none;
+      color: var(--dim);
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 4px;
+      font-size: .85rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .15s;
+    }
+
+    .item .code .mini-btn:hover {
+      background: var(--border);
+      color: var(--lime);
+    }
+
+    .item .code .mini-btn.fav-active {
+      color: var(--amber);
     }
 
     .item .desc {
-      font-size: .9rem;
-      margin: 6px 0 10px;
+      font-size: .88rem;
+      margin-bottom: 8px;
       line-height: 1.35;
-      color: var(--txt);
     }
 
     .item .meta {
-      color: var(--dim);
-      font-size: .72rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
-      padding-bottom: 10px;
+      font-size: .72rem;
+      color: var(--dim);
+      padding-bottom: 8px;
+      margin-bottom: 8px;
       border-bottom: 1px dashed var(--border);
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
-    .item .meta .loc {
+    .item .meta .tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .item .meta .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 1px 6px;
+      border-radius: 6px;
+      background: var(--border);
+      font-size: .65rem;
+      color: var(--dim);
+    }
+
+    .item .meta .tag.cat {
+      background: rgba(74, 158, 255, .12);
+      color: var(--blue);
+    }
+
+    .item .meta .stock {
+      color: var(--lime);
+      font-weight: 700;
+      font-size: 1rem;
       display: flex;
       align-items: center;
       gap: 4px;
     }
 
-    .item .meta .loc i { color: var(--dim-2); }
-
-    .stock {
-      font-size: 1.15rem;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: var(--lime);
+    .item .meta .stock.low {
+      color: var(--amber);
     }
 
-    .stock i { font-size: 1rem; }
+    .item .meta .stock.low::after {
+      content: '⚠';
+      font-size: .8rem;
+    }
+
+    .item .actions { display: flex; gap: 6px; }
 
     /* ============ BOTONES ============ */
-    .btns { display: flex; gap: 8px; }
-
     .btn {
       flex: 1;
-      padding: 11px;
+      padding: 9px;
       border: none;
-      border-radius: var(--radius-sm);
-      font-size: .82rem;
+      border-radius: 7px;
+      font-size: .8rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: transform .15s ease, filter .15s ease, opacity .15s ease;
+    }
+
+    .btn i { font-size: .95rem; line-height: 1; }
+
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+    .btn:not(:disabled):hover { transform: translateY(-1px); }
+
+    .btn-out { background: #ff4444; color: #fff; }
+    .btn-in { background: var(--lime); color: #000; }
+    .btn-neutral { background: var(--border); color: var(--txt); }
+    .btn-blue { background: var(--blue); color: #fff; }
+
+    .btn-add {
+      width: 100%;
+      padding: 12px;
+      background: var(--card);
+      color: var(--lime);
+      border: 1px dashed var(--lime);
+      border-radius: 8px;
+      font-size: .88rem;
       font-weight: 700;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
+      margin-top: 8px;
       transition: all .18s ease;
-      letter-spacing: .2px;
     }
 
-    .btn:disabled { opacity: .55; cursor: not-allowed; }
+    .btn-add:hover { background: var(--lime-glow); }
 
-    .btn:not(:disabled):active { transform: scale(.97); }
-
-    .btn-out {
-      background: linear-gradient(180deg, #ff6666 0%, #ff4444 100%);
-      color: #fff;
-      box-shadow: 0 3px 12px var(--red-glow);
-    }
-    .btn-out:not(:disabled):hover {
-      box-shadow: 0 5px 18px rgba(255, 85, 85, .35);
-      filter: brightness(1.08);
-    }
-
-    .btn-in {
-      background: linear-gradient(180deg, #d0f52e 0%, var(--lime) 100%);
-      color: #000;
-      box-shadow: 0 3px 12px var(--lime-glow);
-    }
-    .btn-in:not(:disabled):hover {
-      box-shadow: 0 5px 18px rgba(196, 240, 0, .3);
-      filter: brightness(1.05);
-    }
-
-    .btn-add {
-      background: var(--card);
-      color: var(--lime);
-      border: 1px dashed rgba(196, 240, 0, .4);
+    .btn-load-more {
       width: 100%;
-      padding: 14px;
-      border-radius: var(--radius);
-      font-size: .9rem;
-      font-weight: 700;
+      padding: 10px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--txt);
+      border-radius: 8px;
+      font-size: .8rem;
+      font-weight: 600;
       cursor: pointer;
       margin-top: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      transition: all .2s;
+      gap: 5px;
     }
 
-    .btn-add:not(:disabled):hover {
-      background: var(--lime-glow);
+    .btn-load-more:hover {
       border-color: var(--lime);
-      transform: translateY(-1px);
+      color: var(--lime);
     }
-
-    .btn-add:disabled { opacity: .5; cursor: not-allowed; }
 
     /* ============ INPUTS ============ */
-    input, select {
+    input, select, textarea {
       width: 100%;
-      padding: 12px 14px;
+      padding: 11px 13px;
       border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
+      border-radius: 8px;
       background: var(--card);
       color: var(--txt);
-      margin-bottom: 12px;
-      font-size: .92rem;
-      transition: all .2s;
+      margin-bottom: 10px;
+      font-size: .9rem;
       outline: none;
+      transition: border-color .2s;
+      font-family: inherit;
     }
 
-    input:focus, select:focus {
-      border-color: var(--lime);
-      box-shadow: 0 0 0 3px var(--lime-glow);
-      background: var(--card-2);
-    }
+    input:focus, select:focus, textarea:focus { border-color: var(--lime); }
 
-    input:disabled, select:disabled { opacity: .5; cursor: not-allowed; }
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
 
     label {
-      font-size: .75rem;
+      font-size: .72rem;
       color: var(--dim);
       display: block;
-      margin-bottom: 5px;
+      margin-bottom: 4px;
       font-weight: 600;
-      letter-spacing: .3px;
       text-transform: uppercase;
     }
 
-    /* ============ SELECT CON WRAPPER ============ */
-    .select-wrap {
-      position: relative;
-      width: 100%;
-      margin-bottom: 12px;
-    }
-
-    .select-wrap select {
-      width: 100%;
-      padding: 12px 46px 12px 16px;
-      border: 1.5px solid var(--border);
-      border-radius: 10px;
-      background: var(--card);
-      color: var(--txt);
-      font-size: .92rem;
-      font-family: inherit;
-      cursor: pointer;
-      outline: none;
-
-      appearance: none;
-      -webkit-appearance: none;
-      -moz-appearance: none;
-
-      transition: border-color .2s, box-shadow .2s, background .2s;
-      margin-bottom: 0;
-    }
-
-    .select-wrap select:hover:not(:disabled) {
-      border-color: var(--border-2);
-      background: var(--card-2);
-    }
-
-    .select-wrap select:focus {
-      border-color: var(--lime);
-      background: var(--card-2);
-      box-shadow:
-        0 0 0 3px var(--lime-glow),
-        0 0 20px rgba(196, 240, 0, .08);
-    }
-
-    .select-wrap select:disabled {
-      opacity: .5;
-      cursor: not-allowed;
-    }
-
-    .select-arrow {
-      position: absolute;
-      right: 6px;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 34px;
-      height: 34px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--dim);
-      font-size: 1.1rem;
-      pointer-events: none;
-      border-radius: 8px;
-      transition: all .25s ease;
-    }
-
-    .select-wrap select:focus ~ .select-arrow {
-      color: var(--lime);
-      background: var(--lime-glow);
-    }
-
-    .select-wrap select:focus ~ .select-arrow i {
-      transform: rotate(180deg);
-    }
-
-    .select-arrow i {
-      transition: transform .25s ease;
-    }
-
-    .select-wrap select option {
-      background: var(--card-2);
-      color: var(--txt);
-      padding: 10px;
-    }
-
-    /* ============ INPUT NUMBER SIN FLECHAS ============ */
     input[type="number"]::-webkit-outer-spin-button,
     input[type="number"]::-webkit-inner-spin-button {
       -webkit-appearance: none;
       margin: 0;
     }
+    input[type="number"] { -moz-appearance: textfield; }
 
-    input[type="number"] {
-      -moz-appearance: textfield;
-      appearance: textfield;
+    /* ============ FORM GRID ============ */
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    /* ============ EMPTY ============ */
+    .empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--dim);
+      font-size: .85rem;
+    }
+
+    .empty i {
+      font-size: 2.4rem;
+      display: block;
+      margin-bottom: 10px;
+      opacity: .4;
+      line-height: 1;
+    }
+
+    /* ============ FILTROS CHIPS ============ */
+    .filters {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .chip {
+      padding: 5px 11px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--dim);
+      font-size: .7rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all .18s ease;
+    }
+
+    .chip:hover:not(.active) {
+      border-color: var(--border-2);
+      color: var(--txt);
+    }
+
+    .chip.active {
+      background: var(--lime);
+      border-color: var(--lime);
+      color: #000;
+    }
+
+    .chip.red.active {
+      background: var(--red);
+      border-color: var(--red);
+      color: #fff;
     }
 
     /* ============ TABLA ============ */
     table {
       width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-      font-size: .75rem;
+      border-collapse: collapse;
+      font-size: .74rem;
       background: var(--card);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
+      border-radius: 8px;
       overflow: hidden;
     }
 
     th, td {
-      padding: 10px 8px;
+      padding: 9px 7px;
       border-bottom: 1px solid var(--border);
       text-align: left;
     }
@@ -591,183 +714,313 @@
       color: var(--dim);
       font-weight: 600;
       text-transform: uppercase;
-      font-size: .68rem;
-      letter-spacing: .5px;
-      background: var(--bg-2);
+      font-size: .66rem;
+      background: rgba(0, 0, 0, .2);
     }
 
     tr:last-child td { border-bottom: none; }
-
-    tbody tr:hover { background: var(--card-2); }
 
     /* ============ MODAL ============ */
     .modal {
       position: fixed;
       inset: 0;
       background: rgba(0, 0, 0, .85);
-      backdrop-filter: blur(4px);
       display: none;
       align-items: center;
       justify-content: center;
       padding: 20px;
       z-index: 10;
-      animation: fadeIn .2s ease;
     }
 
     .modal.open { display: flex; }
 
     .modal-card {
-      background: linear-gradient(180deg, var(--card-2) 0%, var(--card) 100%);
-      border: 1px solid var(--border-2);
-      border-radius: 16px;
-      padding: 22px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
       width: 100%;
-      max-width: 400px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, .6);
-      animation: slideUp .25s ease;
+      max-width: 420px;
+      max-height: 85vh;
+      overflow-y: auto;
     }
 
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(20px) scale(.96); }
-      to   { opacity: 1; transform: translateY(0) scale(1); }
+    .modal-card.wide { max-width: 500px; }
+
+    /* ============ DASHBOARD ============ */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .stat-card .label {
+      font-size: .68rem;
+      color: var(--dim);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: .3px;
+    }
+
+    .stat-card .value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--txt);
+      line-height: 1.1;
+    }
+
+    .stat-card .value.lime { color: var(--lime); }
+    .stat-card .value.amber { color: var(--amber); }
+    .stat-card .value.red { color: var(--red); }
+    .stat-card .value.blue { color: var(--blue); }
+
+    .stat-card .hint {
+      font-size: .68rem;
+      color: var(--dim-2);
+    }
+
+    .dash-section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+
+    .dash-section h3 {
+      font-size: .85rem;
+      margin-bottom: 10px;
+      color: var(--txt);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .dash-section h3 i {
+      color: var(--lime);
+      font-size: 1rem;
+    }
+
+    .dash-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .dash-list .dash-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 8px;
+      background: rgba(0, 0, 0, .15);
+      border-radius: 6px;
+      font-size: .78rem;
+      gap: 8px;
+    }
+
+    .dash-list .dash-item .name {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .dash-list .dash-item .count {
+      font-weight: 700;
+      color: var(--lime);
+      white-space: nowrap;
     }
 
     /* ============ TOAST ============ */
     .toast {
       position: fixed;
-      bottom: 24px;
+      bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
-      background: linear-gradient(180deg, #d0f52e 0%, var(--lime) 100%);
+      background: var(--lime);
       color: #000;
-      padding: 13px 22px;
-      border-radius: var(--radius);
+      padding: 11px 20px;
+      border-radius: 10px;
       font-weight: 700;
-      font-size: .85rem;
+      font-size: .82rem;
       display: none;
       z-index: 20;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       max-width: 90%;
-      text-align: center;
-      box-shadow: 0 10px 30px rgba(196, 240, 0, .25);
-      animation: slideUp .25s ease;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .3);
     }
 
-    .toast.warn {
-      background: linear-gradient(180deg, #ff6666 0%, #ff4444 100%);
-      color: #fff;
-      box-shadow: 0 10px 30px rgba(255, 85, 85, .3);
+    .toast.warn { background: var(--red); color: #fff; }
+    .toast.amber { background: var(--amber); color: #000; }
+    .toast.show { display: flex; }
+
+    /* ============ HISTORIAL / OBSERVACIONES ============ */
+    .hist-item {
+      padding: 8px 10px;
+      background: rgba(0, 0, 0, .15);
+      border-radius: 6px;
+      font-size: .75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      margin-bottom: 6px;
     }
 
-    /* ============ EXPORT ============ */
-    .export-row { display: flex; gap: 8px; margin-top: 14px; }
-
-    .export-row .btn {
-      background: var(--card);
-      color: var(--txt);
-      border: 1px solid var(--border);
-      width: 100%;
+    .hist-item .h-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
     }
 
-    .export-row .btn:hover {
-      border-color: var(--lime);
+    .hist-item .h-type {
+      font-weight: 700;
+      font-size: .68rem;
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+
+    .hist-item .h-type.retiro {
+      background: rgba(255, 85, 85, .15);
+      color: var(--red);
+    }
+
+    .hist-item .h-type.ingreso {
+      background: rgba(196, 240, 0, .15);
       color: var(--lime);
-      background: var(--lime-glow);
     }
 
-    /* ============ SYNC ============ */
-    .sync-indicator {
-      position: fixed;
-      top: 12px;
-      right: 12px;
-      background: var(--card);
-      border: 1px solid var(--border-2);
-      color: var(--lime);
-      border-radius: var(--radius-sm);
-      padding: 5px 12px;
+    .hist-item .h-meta {
+      color: var(--dim);
       font-size: .7rem;
-      display: none;
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .hist-item .h-notes {
+      color: var(--dim);
+      font-style: italic;
+      font-size: .7rem;
+    }
+
+    /* ============ PAGINACIÓN ============ */
+    .pagination {
+      display: flex;
+      justify-content: center;
       align-items: center;
       gap: 6px;
-      z-index: 30;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, .4);
+      margin-top: 12px;
+      flex-wrap: wrap;
     }
 
-    .sync-indicator.show { display: inline-flex; }
-
-    /* ============ INITIAL LOADING ============ */
-    .initial-loading {
-      text-align: center;
-      padding: 40px 20px;
-      color: var(--dim);
-      font-size: .9rem;
-    }
-
-    .initial-loading i {
-      font-size: 2.2rem;
-      color: var(--lime);
-      animation: spin 1s linear infinite;
-      display: block;
-      margin-bottom: 12px;
-      filter: drop-shadow(0 0 12px var(--lime-glow));
-    }
-
-    .initial-loading .hint {
+    .pagination button {
+      padding: 6px 10px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--txt);
+      border-radius: 6px;
+      cursor: pointer;
       font-size: .75rem;
-      margin-top: 8px;
-      color: var(--dim-2);
+      font-weight: 600;
     }
 
-    /* Responsive */
-    @media (max-width: 420px) {
-      .app-header h1 { font-size: 1.2rem; }
-      .app-desc .feature { font-size: .7rem; }
-      .tab { font-size: .75rem; padding: 9px 4px; }
-      .desc-actions { width: 100%; justify-content: flex-end; margin-left: 0; margin-top: 4px; }
+    .pagination button:disabled {
+      opacity: .4;
+      cursor: not-allowed;
     }
+
+    .pagination button.active {
+      background: var(--lime);
+      border-color: var(--lime);
+      color: #000;
+    }
+
+    .pagination .page-info {
+      font-size: .72rem;
+      color: var(--dim);
+    }
+
+    /* ============ OPERACIÓN RÁPIDA ============ */
+    .quick-op {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .quick-op .op-btn {
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform .15s;
+    }
+
+    .quick-op .op-btn:active { transform: scale(.98); }
+
+    .quick-op .op-btn.out { background: #ff4444; color: #fff; }
+    .quick-op .op-btn.in { background: var(--lime); color: #000; }
   </style>
 </head>
 <body>
 
-  <!-- ============ HEADER ============ -->
-  <header class="app-header">
+  <div class="header">
     <div class="top-row">
-      <h1>
-        <i class='bx bx-package'></i> Inventario Almacén
-      </h1>
-      <span class="version-badge">Demo · v0.7</span>
-    </div>
-
-    <div class="app-desc">
-      <span class="feature">
-        <i class='bx bx-package'></i> Control de stock de items
-      </span>
-      <span class="feature retiro">
-        <i class='bx bx-transfer'></i> Ingresos y salidas
-      </span>
-
-      <span class="desc-actions">
-        <span class="cache-badge" id="cache-badge" style="display:none">
-          <i class='bx bx-hdd'></i> caché
-        </span>
-        <button class="refresh-btn" onclick="forceRefresh()" title="Recargar datos frescos">
-          <i class='bx bx-refresh'></i> Actualizar
+      <h1><i class='bx bx-package'></i> Inventario</h1>
+      <div class="header-actions">
+        <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="Modo claro/oscuro">
+          <i class='bx bx-sun'></i>
         </button>
-      </span>
+        <button class="icon-btn" id="compact-btn" onclick="toggleCompact()" title="Modo compacto">
+          <i class='bx bx-list-ul'></i>
+        </button>
+        <button class="icon-btn" onclick="showShortcutsHelp()" title="Atajos de teclado">
+          <i class='bx bx-keyboard'></i>
+        </button>
+      </div>
     </div>
-  </header>
 
-  <!-- ============ TABS ============ -->
+    <div class="sub">
+      <span>Control de stock</span>
+      <span class="counter" id="counter"></span>
+      <span class="low-stock-badge" id="low-stock-badge" onclick="showLowStock()">
+        <i class='bx bx-error'></i> <span id="low-stock-count">0</span> stock bajo
+      </span>
+      <button class="refresh-btn" onclick="refresh()" title="Actualizar">
+        <i class='bx bx-refresh'></i> Actualizar
+      </button>
+    </div>
+  </div>
+
   <div class="tabs">
-    <div class="tab active" id="tab-inv" onclick="showTab('inv', this)">
+    <div class="tab active" id="tab-inv" onclick="showTab('inv')">
       <i class='bx bx-box'></i> Inventario
     </div>
-    <div class="tab" id="tab-mov" onclick="showTab('mov', this)">
+    <div class="tab" id="tab-mov" onclick="showTab('mov')">
       <i class='bx bx-history'></i> Movimientos
     </div>
-    <div class="tab" id="tab-new" onclick="showTab('new', this)">
-      <i class='bx bx-plus-circle'></i> Nuevo Item
+    <div class="tab" id="tab-new" onclick="showTab('new')">
+      <i class='bx bx-plus-circle'></i> Nuevo
+    </div>
+    <div class="tab" id="tab-dash" onclick="showTab('dash')">
+      <i class='bx bx-bar-chart'></i> Dashboard
     </div>
   </div>
 
@@ -775,30 +1028,91 @@
   <div class="panel active" id="p-inv">
     <div class="search-wrap">
       <i class='bx bx-search'></i>
-      <input class="search" id="search" placeholder="Buscar por código o descripción..." oninput="render()">
+      <input class="search" id="search" placeholder="Buscar por código o descripción... (Ctrl+K)" autocomplete="off">
+      <button class="search-clear" id="search-clear" onclick="clearSearch()">
+        <i class='bx bx-x'></i>
+      </button>
     </div>
 
+    <div class="toolbar">
+      <select id="sort-select" onchange="setSort(this.value)" style="flex:1;">
+        <option value="code-asc">Código ↑</option>
+        <option value="code-desc">Código ↓</option>
+        <option value="desc-asc">Descripción ↑</option>
+        <option value="qty-desc">Stock ↓</option>
+        <option value="qty-asc">Stock ↑</option>
+        <option value="loc-asc">Ubicación ↑</option>
+      </select>
+
+      <select id="category-filter" onchange="setCategoryFilter(this.value)" style="flex:1;">
+        <option value="">Todas las categorías</option>
+      </select>
+
+      <select id="warehouse-filter" onchange="setWarehouseFilter(this.value)" style="flex:1;">
+        <option value="">Todos los almacenes</option>
+      </select>
+
+      <button class="tool-btn" id="fav-filter-btn" onclick="toggleFavFilter()" title="Solo favoritos">
+        <i class='bx bx-star'></i> Favoritos
+      </button>
+
+      <button class="tool-btn" id="low-filter-btn" onclick="toggleLowFilter()" title="Solo stock bajo">
+        <i class='bx bx-error'></i> Stock bajo
+      </button>
+
+      <button class="tool-btn" id="show-inactive-btn" onclick="toggleShowInactive()" title="Mostrar items dados de baja">
+        <i class='bx bx-show'></i> Bajas
+      </button>
+
+      <button class="tool-btn" onclick="exportInventory()" title="Exportar inventario">
+        <i class='bx bx-download'></i> Excel
+      </button>
+
+      <button class="tool-btn" onclick="exportFullBackup()" title="Backup completo">
+        <i class='bx bx-cloud-download'></i> Backup
+      </button>
+    </div>
+
+    <div class="status" id="status"></div>
+
     <div id="list">
-      <div class="initial-loading">
+      <div class="loading" id="loading-state">
         <i class='bx bx-loader-circle'></i>
-        <div id="loading-text">Conectando con Google Sheets...</div>
-        <div class="hint">La primera carga puede tardar unos segundos</div>
+        <div class="loading-text">Cargando catálogo...</div>
       </div>
     </div>
 
-    <button class="btn-add" id="btn-add-from-inv" onclick="showTab('new', document.getElementById('tab-new'))">
-      <i class='bx bx-plus-circle'></i> Registrar nuevo item
-    </button>
-
-    <div class="panel-loading-overlay" id="overlay-inv">
-      <i class='bx bx-loader-circle'></i>
-      <div class="msg" data-loading-msg>Conectando con Google Sheets...</div>
-      <div class="hint">Esperando respuesta del servidor</div>
-    </div>
+    <div class="pagination" id="pagination" style="display:none;"></div>
   </div>
 
   <!-- ============ PANEL MOVIMIENTOS ============ -->
   <div class="panel" id="p-mov">
+    <div class="search-wrap">
+      <i class='bx bx-search'></i>
+      <input class="search" id="mov-search" placeholder="Buscar en movimientos..." autocomplete="off" oninput="renderMovs()">
+      <button class="search-clear" id="mov-search-clear" onclick="document.getElementById('mov-search').value=''; renderMovs(); this.classList.remove('show');">
+        <i class='bx bx-x'></i>
+      </button>
+    </div>
+
+    <div class="filters">
+      <div class="chip active" data-type="ALL" onclick="setType('ALL')">
+        <i class='bx bx-list-ul'></i> Todos
+      </div>
+      <div class="chip" data-type="INGRESO" onclick="setType('INGRESO')">
+        <i class='bx bx-plus-circle'></i> Ingresos
+      </div>
+      <div class="chip red" data-type="RETIRO" onclick="setType('RETIRO')">
+        <i class='bx bx-minus-circle'></i> Retiros
+      </div>
+      <div class="chip active" data-range="ALL" onclick="setRange('ALL')">Todo</div>
+      <div class="chip" data-range="TODAY" onclick="setRange('TODAY')">Hoy</div>
+      <div class="chip" data-range="WEEK" onclick="setRange('WEEK')">7 días</div>
+      <div class="chip" data-range="MONTH" onclick="setRange('MONTH')">30 días</div>
+    </div>
+
+    <div class="status" id="mov-status"></div>
+
     <table>
       <thead>
         <tr>
@@ -812,75 +1126,226 @@
       <tbody id="movs"></tbody>
     </table>
 
-    <div class="export-row">
-      <button class="btn" id="btn-export" onclick="exportData()">
-        <i class='bx bx-download'></i> Exportar Excel
-      </button>
-    </div>
-
-    <div class="panel-loading-overlay" id="overlay-mov">
-      <i class='bx bx-loader-circle'></i>
-      <div class="msg" data-loading-msg>Conectando con Google Sheets...</div>
-      <div class="hint">Esperando datos del inventario</div>
-    </div>
+    <button class="btn btn-in" style="width:100%;margin-top:12px" onclick="exportData()">
+      <i class='bx bx-download'></i> Exportar movimientos
+    </button>
   </div>
 
   <!-- ============ PANEL NUEVO ITEM ============ -->
   <div class="panel" id="p-new">
-    <label>Código (tal cual proveedor)</label>
+    <label>Código</label>
     <input id="n-code" placeholder="Ej: CZ09602061">
 
-    <label>Descripción completa</label>
-    <input id="n-desc" placeholder="Ej: VENTOSA FUELLE D.80 SAB80NBR_60G38_IG">
+    <label>Descripción</label>
+    <input id="n-desc" placeholder="Ej: VENTOSA FUELLE D.80">
 
-    <label>Ubicación</label>
-    <input id="n-loc" placeholder="Ej: G02-04/TAV1">
-
-    <label>Unidad de medida</label>
-    <div class="select-wrap" id="um-wrap">
-      <select id="n-um">
-        <option value="UND">UND — Unidades</option>
-        <option value="KG">KG — Kilogramos</option>
-        <option value="LTS">LTS — Litros</option>
-        <option value="MTS">MTS — Metros</option>
-      </select>
-      <span class="select-arrow">
-        <i class='bx bx-chevron-down'></i>
-      </span>
+    <div class="form-row">
+      <div>
+        <label>Ubicación</label>
+        <input id="n-loc" placeholder="Ej: G02-04">
+      </div>
+      <div>
+        <label>Unidad</label>
+        <select id="n-um">
+          <option value="UND">UND</option>
+          <option value="KG">KG</option>
+          <option value="LTS">LTS</option>
+          <option value="MTS">MTS</option>
+        </select>
+      </div>
     </div>
 
-    <label>Cantidad inicial</label>
-    <input id="n-qty" type="number" min="0" placeholder="0" inputmode="numeric">
+    <div class="form-row">
+      <div>
+        <label>Categoría</label>
+        <input id="n-category" placeholder="Ej: Neumática" list="categories-datalist">
+        <datalist id="categories-datalist"></datalist>
+      </div>
+      <div>
+        <label>Almacén</label>
+        <input id="n-warehouse" placeholder="Ej: Almacén 1" list="warehouses-datalist">
+        <datalist id="warehouses-datalist"></datalist>
+      </div>
+    </div>
 
-    <button class="btn btn-in" id="btn-add-item" style="width:100%" onclick="addItem()">
-      <i class='bx bx-save'></i> Guardar item
+    <div class="form-row">
+      <div>
+        <label>Cantidad inicial</label>
+        <input id="n-qty" type="number" min="0" placeholder="0">
+      </div>
+      <div>
+        <label>Stock mínimo</label>
+        <input id="n-minQty" type="number" min="0" placeholder="0">
+      </div>
+    </div>
+
+    <button class="btn btn-in" id="btn-save" style="width:100%" onclick="addItem()">
+      <i class='bx bx-save'></i> Guardar
     </button>
+  </div>
 
-    <div class="panel-loading-overlay" id="overlay-new">
-      <i class='bx bx-loader-circle'></i>
-      <div class="msg" data-loading-msg>Conectando con Google Sheets...</div>
-      <div class="hint">Esperando datos del inventario</div>
+  <!-- ============ PANEL DASHBOARD ============ -->
+  <div class="panel" id="p-dash">
+    <div id="dashboard-content">
+      <div class="loading">
+        <i class='bx bx-loader-circle'></i>
+        <div class="loading-text">Cargando dashboard...</div>
+      </div>
     </div>
   </div>
 
-  <!-- ============ MODAL ============ -->
+  <!-- ============ MODAL MOVIMIENTO ============ -->
   <div class="modal" id="modal">
     <div class="modal-card">
-      <div class="code" id="m-code" style="color:var(--lime);font-size:.8rem;font-weight:bold"></div>
-      <div id="m-desc" style="font-size:.9rem;margin:6px 0"></div>
-      <div id="m-stock" style="color:var(--dim);font-size:.8rem;margin-bottom:12px;display:flex;align-items:center;gap:6px"></div>
+      <div id="m-code" style="color:var(--lime);font-size:.8rem;font-weight:bold;margin-bottom:4px"></div>
+      <div id="m-desc" style="font-size:.88rem;margin-bottom:6px"></div>
+      <div id="m-stock" style="color:var(--dim);font-size:.78rem;margin-bottom:12px"></div>
 
       <label>Cantidad</label>
-      <input id="m-qty" type="number" min="1" value="1" placeholder="1" inputmode="numeric">
+      <input id="m-qty" type="number" min="1" value="1">
 
-      <label>Nombre de quien retira / ingresa</label>
+      <label>Nombre</label>
       <input id="m-who" placeholder="Ej: Juan Pérez">
 
-      <div class="btns">
-        <button class="btn" style="background:var(--border);color:var(--txt)" onclick="closeModal()">
+      <label>Observaciones (opcional)</label>
+      <textarea id="m-notes" placeholder="Ej: Retiro para orden #1234"></textarea>
+
+      <div style="display:flex;gap:8px;margin-top:6px">
+        <button class="btn btn-neutral" onclick="closeModal()">
           <i class='bx bx-x'></i> Cancelar
         </button>
-        <button class="btn" id="m-confirm" onclick="confirmMov()">Confirmar</button>
+        <button class="btn btn-in" id="m-confirm" onclick="confirmMov()">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MODAL EDITAR ITEM ============ -->
+  <div class="modal" id="edit-modal">
+    <div class="modal-card">
+      <h3 style="font-size:1rem;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+        <i class='bx bx-edit' style="color:var(--lime)"></i> Editar item
+      </h3>
+
+      <label>Código</label>
+      <input id="e-code">
+
+      <label>Descripción</label>
+      <input id="e-desc">
+
+      <div class="form-row">
+        <div>
+          <label>Ubicación</label>
+          <input id="e-loc">
+        </div>
+        <div>
+          <label>Unidad</label>
+          <select id="e-um">
+            <option value="UND">UND</option>
+            <option value="KG">KG</option>
+            <option value="LTS">LTS</option>
+            <option value="MTS">MTS</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div>
+          <label>Categoría</label>
+          <input id="e-category" list="categories-datalist">
+        </div>
+        <div>
+          <label>Almacén</label>
+          <input id="e-warehouse" list="warehouses-datalist">
+        </div>
+      </div>
+
+      <label>Stock mínimo</label>
+      <input id="e-minQty" type="number" min="0">
+
+      <div style="display:flex;gap:8px;margin-top:6px">
+        <button class="btn btn-neutral" onclick="closeEditModal()">
+          <i class='bx bx-x'></i> Cancelar
+        </button>
+        <button class="btn btn-in" onclick="saveEditItem()">
+          <i class='bx bx-save'></i> Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MODAL HISTORIAL ============ -->
+  <div class="modal" id="history-modal">
+    <div class="modal-card wide">
+      <h3 style="font-size:1rem;margin-bottom:4px;display:flex;align-items:center;gap:6px;">
+        <i class='bx bx-history' style="color:var(--lime)"></i> Historial del item
+      </h3>
+      <div id="hist-subtitle" style="color:var(--dim);font-size:.75rem;margin-bottom:12px;"></div>
+
+      <div id="hist-content" style="max-height:400px;overflow-y:auto;"></div>
+
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn btn-neutral" onclick="closeHistoryModal()">
+          <i class='bx bx-x'></i> Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MODAL STOCK BAJO ============ -->
+  <div class="modal" id="lowstock-modal">
+    <div class="modal-card wide">
+      <h3 style="font-size:1rem;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+        <i class='bx bx-error' style="color:var(--amber)"></i> Items con stock bajo
+      </h3>
+
+      <div id="lowstock-content" style="max-height:400px;overflow-y:auto;"></div>
+
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn btn-neutral" onclick="closeLowStockModal()">
+          <i class='bx bx-x'></i> Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MODAL ATAJOS ============ -->
+  <div class="modal" id="shortcuts-modal">
+    <div class="modal-card">
+      <h3 style="font-size:1rem;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+        <i class='bx bx-keyboard' style="color:var(--lime)"></i> Atajos de teclado
+      </h3>
+
+      <div style="font-size:.8rem;display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;justify-content:space-between;">
+          <span>Buscar en inventario</span>
+          <code style="background:var(--border);padding:2px 6px;border-radius:4px;">Ctrl + K</code>
+        </div>
+        <div style="display:flex;justify-content:space-between;">
+          <span>Ver inventario</span>
+          <code style="background:var(--border);padding:2px 6px;border-radius:4px;">Ctrl + 1</code>
+        </div>
+        <div style="display:flex;justify-content:space-between;">
+          <span>Ver movimientos</span>
+          <code style="background:var(--border);padding:2px 6px;border-radius:4px;">Ctrl + 2</code>
+        </div>
+        <div style="display:flex;justify-content:space-between;">
+          <span>Ver dashboard</span>
+          <code style="background:var(--border);padding:2px 6px;border-radius:4px;">Ctrl + 3</code>
+        </div>
+        <div style="display:flex;justify-content:space-between;">
+          <span>Cerrar modal</span>
+          <code style="background:var(--border);padding:2px 6px;border-radius:4px;">Esc</code>
+        </div>
+        <div style="display:flex;justify-content:space-between;">
+          <span>Refrescar datos</span>
+          <code style="background:var(--border);padding:2px 6px;border-radius:4px;">Ctrl + R</code>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:16px">
+        <button class="btn btn-neutral" onclick="closeShortcutsModal()">
+          <i class='bx bx-x'></i> Cerrar
+        </button>
       </div>
     </div>
   </div>
@@ -888,34 +1353,75 @@
   <!-- ============ TOAST ============ -->
   <div class="toast" id="toast"></div>
 
-  <!-- ============ SYNC INDICATOR ============ -->
-  <div class="sync-indicator" id="sync-indicator">
-    <i class='bx bx-loader-circle bx-spin'></i> Sincronizando...
-  </div>
-
   <script>
     /* =====================================================
        CONFIGURACIÓN
     ===================================================== */
-    const API_URL = 'https://script.google.com/macros/s/AKfycby3mkECqJKTyYYht-nibvx43QEiXw_KRoEIO9275DJxpQVeXBpIEUGMNqqixQj7F1QL/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxE5W9HKA3d-Vj5oxvX4qohba3Twagp7kcuhZCDQqdWbpdUAdN0Siv2Yg5hI5kY5-cf/exec';
+    const RECENT_KEY = 'inv_recent_v30';
+    const CATALOG_KEY = 'inv_catalog_v30';
+    const FAVORITES_KEY = 'inv_favorites_v30';
+    const THEME_KEY = 'inv_theme_v30';
+    const COMPACT_KEY = 'inv_compact_v30';
+    const SORT_KEY = 'inv_sort_v30';
+    const CATALOG_TTL = 1000 * 60 * 30;
+    const PAGE_SIZE = 50;
 
-    const CACHE_KEY = 'inventario_cache_v1';
-    const CACHE_TTL = 1000 * 60 * 2; // 2 minutos
+    /* =====================================================
+       STORAGE SEGURO
+    ===================================================== */
+    function getSafeStorage() {
+      const memory = {
+        _data: {},
+        getItem(k) { return this._data[k] || null; },
+        setItem(k, v) { this._data[k] = String(v); },
+        removeItem(k) { delete this._data[k]; }
+      };
 
-    let db = { items: [], movs: [] };
+      try {
+        window.sessionStorage.setItem('__t__', '1');
+        window.sessionStorage.removeItem('__t__');
+        return window.sessionStorage;
+      } catch (e) {}
+
+      try {
+        window.localStorage.setItem('__t__', '1');
+        window.localStorage.removeItem('__t__');
+        return window.localStorage;
+      } catch (e) {}
+
+      return memory;
+    }
+
+    const safeStorage = getSafeStorage();
+
+    /* =====================================================
+       ESTADO GLOBAL
+    ===================================================== */
+    let state = {
+      allItems: [],
+      movs: [],
+      recentItems: [],
+      searchResults: [],
+      searchTotal: 0,
+      searchQuery: '',
+      searchOffset: 0,
+      currentPage: 1,
+      sortBy: 'code-asc',
+      categoryFilter: '',
+      warehouseFilter: '',
+      showOnlyFavorites: false,
+      showOnlyLowStock: false,
+      showInactive: false,
+      stats: { totalItems: 0, lowStock: 0 },
+      categories: [],
+      warehouses: []
+    };
+
     let movType = null;
     let movItem = null;
-
-    let isLoading = false;
-    let isSyncing = false;
-    let loadingInterval = null;
-
-    const loadingMessages = [
-      'Conectando con Google Sheets...',
-      'Despertando servidor...',
-      'Cargando inventario...',
-      'Casi listo...'
-    ];
+    let editItemOriginalCode = null;
+    let filters = { type: 'ALL', range: 'ALL' };
 
     /* =====================================================
        HELPERS
@@ -928,14 +1434,14 @@
       return '';
     }
 
-    function normalizeType(val) {
+    function normType(val) {
       const s = String(val || '').trim().toUpperCase();
       if (s.includes('RETIRO') || s === 'OUT' || s === 'SALIDA') return 'RETIRO';
       if (s.includes('INGRESO') || s === 'IN' || s === 'ENTRADA') return 'INGRESO';
-      return s || '—';
+      return s;
     }
 
-    function normalizeDate(val) {
+    function normDate(val) {
       if (!val) return '—';
       if (typeof val === 'string') {
         if (/^\d{4}-\d{2}-\d{2}T/.test(val)) {
@@ -947,391 +1453,847 @@
       return String(val);
     }
 
-    /* =====================================================
-       FETCH CON REINTENTOS Y TIMEOUT
-    ===================================================== */
-    async function fetchWithRetry(url, options = {}, retries = 2, delayMs = 500, timeoutMs = 15000) {
-      for (let attempt = 1; attempt <= retries; attempt++) {
-        try {
-          const controller = new AbortController();
-          const timer = setTimeout(() => controller.abort(), timeoutMs);
-
-          const response = await fetch(url, { ...options, signal: controller.signal });
-          clearTimeout(timer);
-
-          if ((response.status === 404 || response.status >= 500) && attempt < retries) {
-            await new Promise(r => setTimeout(r, delayMs * attempt));
-            continue;
-          }
-          return response;
-        } catch (err) {
-          if (attempt === retries) throw err;
-          await new Promise(r => setTimeout(r, delayMs * attempt));
-        }
-      }
+    function esc(str) {
+      return String(str).replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      })[c]);
     }
 
-    async function apiGet(action) {
-      const url = API_URL + '?action=' + encodeURIComponent(action) + '&t=' + Date.now();
-      const response = await fetchWithRetry(url, {
-        method: 'GET', cache: 'no-store', redirect: 'follow'
-      });
-      const text = await response.text();
+    function normStr(s) {
+      return String(s || '').toLowerCase().trim()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    }
 
-      if (!response.ok) throw new Error('Error HTTP ' + response.status);
-
+    /* =====================================================
+       FETCH
+    ===================================================== */
+    async function apiGet(params) {
+      const url = API_URL + '?' + new URLSearchParams({ ...params, t: Date.now() });
+      const r = await fetch(url, { redirect: 'follow' });
+      const text = await r.text();
+      if (!r.ok) throw new Error('HTTP ' + r.status);
       try { return JSON.parse(text); }
-      catch {
-        if (text.includes('accounts.google.com')) throw new Error('El deployment NO es público.');
-        throw new Error('La respuesta no es JSON válido.');
-      }
+      catch { throw new Error('Respuesta no es JSON'); }
     }
 
     async function apiPost(data) {
-      const response = await fetchWithRetry(API_URL, {
+      const r = await fetch(API_URL, {
         method: 'POST',
         body: JSON.stringify(data),
         redirect: 'follow'
-      }, 2, 500, 15000);
-
-      const text = await response.text();
-      if (!response.ok) throw new Error('Error HTTP ' + response.status);
-
+      });
+      const text = await r.text();
+      if (!r.ok) throw new Error('HTTP ' + r.status);
       try { return JSON.parse(text); }
-      catch { throw new Error('Respuesta POST no es JSON'); }
+      catch { throw new Error('Respuesta no es JSON'); }
     }
 
     /* =====================================================
-       CACHE LOCAL
+       FAVORITOS
     ===================================================== */
-    function saveCache() {
+    function getFavorites() {
+      try { return JSON.parse(safeStorage.getItem(FAVORITES_KEY) || '[]'); }
+      catch { return []; }
+    }
+
+    function isFavorite(code) {
+      return getFavorites().includes(String(code));
+    }
+
+    function toggleFavorite(code) {
+      let favs = getFavorites();
+      code = String(code);
+      if (favs.includes(code)) {
+        favs = favs.filter(c => c !== code);
+      } else {
+        favs.push(code);
+      }
+      try { safeStorage.setItem(FAVORITES_KEY, JSON.stringify(favs)); }
+      catch (e) {}
+      renderInventory();
+    }
+
+    /* =====================================================
+       TEMA Y MODO COMPACTO
+    ===================================================== */
+    function toggleTheme() {
+      document.body.classList.toggle('light-mode');
+      const isLight = document.body.classList.contains('light-mode');
+      safeStorage.setItem(THEME_KEY, isLight ? 'light' : 'dark');
+      const btn = document.getElementById('theme-btn');
+      if (btn) btn.innerHTML = isLight
+        ? "<i class='bx bx-moon'></i>"
+        : "<i class='bx bx-sun'></i>";
+      playSound('click');
+    }
+
+    function toggleCompact() {
+      document.body.classList.toggle('compact');
+      const isCompact = document.body.classList.contains('compact');
+      safeStorage.setItem(COMPACT_KEY, isCompact ? '1' : '0');
+      const btn = document.getElementById('compact-btn');
+      if (btn) btn.classList.toggle('active', isCompact);
+      playSound('click');
+    }
+
+    function loadPreferences() {
+      const theme = safeStorage.getItem(THEME_KEY);
+      if (theme === 'light') {
+        document.body.classList.add('light-mode');
+        const btn = document.getElementById('theme-btn');
+        if (btn) btn.innerHTML = "<i class='bx bx-moon'></i>";
+      }
+
+      const compact = safeStorage.getItem(COMPACT_KEY);
+      if (compact === '1') {
+        document.body.classList.add('compact');
+        const btn = document.getElementById('compact-btn');
+        if (btn) btn.classList.add('active');
+      }
+
+      const sort = safeStorage.getItem(SORT_KEY);
+      if (sort) {
+        state.sortBy = sort;
+        const sel = document.getElementById('sort-select');
+        if (sel) sel.value = sort;
+      }
+    }
+
+    /* =====================================================
+       SONIDO
+    ===================================================== */
+    function playSound(type) {
       try {
-        localStorage.setItem(CACHE_KEY, JSON.stringify({
-          items: db.items, movs: db.movs, ts: Date.now()
-        }));
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        if (type === 'success') {
+          osc.frequency.value = 800;
+          gain.gain.value = 0.05;
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.08);
+        } else if (type === 'error') {
+          osc.frequency.value = 300;
+          gain.gain.value = 0.08;
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.15);
+        } else if (type === 'click') {
+          osc.frequency.value = 600;
+          gain.gain.value = 0.03;
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.05);
+        }
       } catch (e) {}
     }
 
-    function loadCache() {
+    /* =====================================================
+       CATÁLOGO LOCAL
+    ===================================================== */
+    function loadCatalogFromCache() {
       try {
-        const raw = localStorage.getItem(CACHE_KEY);
+        const raw = safeStorage.getItem(CATALOG_KEY);
         if (!raw) return false;
-        const cache = JSON.parse(raw);
-        db.items = cache.items || [];
-        db.movs  = cache.movs  || [];
+        const data = JSON.parse(raw);
+        if (Date.now() - data.ts > CATALOG_TTL) return false;
+        state.allItems = data.items || [];
         return true;
       } catch { return false; }
     }
 
-    function isCacheFresh() {
+    function saveCatalogToCache() {
       try {
-        const raw = localStorage.getItem(CACHE_KEY);
-        if (!raw) return false;
-        return (Date.now() - JSON.parse(raw).ts) < CACHE_TTL;
-      } catch { return false; }
+        safeStorage.setItem(CATALOG_KEY, JSON.stringify({
+          items: state.allItems,
+          ts: Date.now()
+        }));
+      } catch (e) {}
     }
 
-    function showCacheBadge(show) {
-      const badge = document.getElementById('cache-badge');
-      if (badge) badge.style.display = show ? 'inline-flex' : 'none';
-    }
-
-    function showSyncIndicator(show) {
-      const el = document.getElementById('sync-indicator');
-      if (el) el.classList.toggle('show', show);
-    }
-
-    /* =====================================================
-       ESTADO DE CARGA
-    ===================================================== */
-    function setTabsLoading(state) {
-      ['tab-inv', 'tab-mov', 'tab-new'].forEach(id => {
-        const tab = document.getElementById(id);
-        if (tab) tab.classList.toggle('loading', state);
-      });
-    }
-
-    function setOverlaysVisible(visible) {
-      ['overlay-inv', 'overlay-mov', 'overlay-new'].forEach(id => {
-        const ov = document.getElementById(id);
-        if (ov) ov.classList.toggle('show', visible);
-      });
-    }
-
-    function setControlsDisabled(disabled) {
-      ['btn-add-from-inv', 'btn-export', 'btn-add-item',
-       'n-code', 'n-desc', 'n-loc', 'n-um', 'n-qty'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.disabled = disabled;
-      });
-    }
-
-    function startLoadingMessages() {
-      if (loadingInterval) return;
-      let i = 0;
-      const apply = () => {
-        document.querySelectorAll('[data-loading-msg]').forEach(el => {
-          el.textContent = loadingMessages[i];
-        });
-        const initText = document.getElementById('loading-text');
-        if (initText) initText.textContent = loadingMessages[i];
-      };
-      apply();
-      loadingInterval = setInterval(() => {
-        i = (i + 1) % loadingMessages.length;
-        apply();
-      }, 2200);
-    }
-
-    function stopLoadingMessages() {
-      if (loadingInterval) {
-        clearInterval(loadingInterval);
-        loadingInterval = null;
+    async function fetchCatalog() {
+      if (loadCatalogFromCache()) return;
+      try {
+        const data = await apiGet({ action: 'getAllItems' });
+        state.allItems = data.items || [];
+        saveCatalogToCache();
+      } catch (e) {
+        console.warn('No se pudo descargar catálogo:', e.message);
       }
     }
 
-    function setLoading(state) {
-      if (isLoading === state) return;
-      isLoading = state;
+    /* =====================================================
+       BÚSQUEDA + ORDENAMIENTO + FILTROS
+    ===================================================== */
+    function applySort(items) {
+      const sort = state.sortBy;
+      const list = [...items];
 
-      setTabsLoading(state);
-      setOverlaysVisible(state);
-      setControlsDisabled(state);
+      list.sort((a, b) => {
+        switch (sort) {
+          case 'code-asc':
+            return normStr(a.code).localeCompare(normStr(b.code));
+          case 'code-desc':
+            return normStr(b.code).localeCompare(normStr(a.code));
+          case 'desc-asc':
+            return normStr(a.desc).localeCompare(normStr(b.desc));
+          case 'qty-desc':
+            return (Number(b.qty) || 0) - (Number(a.qty) || 0);
+          case 'qty-asc':
+            return (Number(a.qty) || 0) - (Number(b.qty) || 0);
+          case 'loc-asc':
+            return normStr(a.loc).localeCompare(normStr(b.loc));
+          default:
+            return 0;
+        }
+      });
 
-      if (state) startLoadingMessages();
-      else       stopLoadingMessages();
+      return list;
     }
 
-    /* =====================================================
-       CARGAR BASE DE DATOS
-    ===================================================== */
-    async function loadDatabase() {
-      const hasCache = loadCache();
-      const cacheWasFresh = isCacheFresh();
+    function filterItems(items) {
+      const q = normStr(state.searchQuery);
 
-      if (hasCache && db.items.length) {
-        render();
-        renderMovs();
-        showCacheBadge(true);
-
-        if (cacheWasFresh) {
-          console.log('✅ Cache fresco, no se revalida');
-          return;
+      return items.filter(item => {
+        // Búsqueda
+        if (q) {
+          const code = normStr(item.code);
+          const desc = normStr(item.desc);
+          if (!code.includes(q) && !desc.includes(q)) return false;
         }
 
-        console.log('🔄 Revalidando en background');
-        syncInBackground();
+        // Categoría
+        if (state.categoryFilter) {
+          if (String(item.category || '') !== state.categoryFilter) return false;
+        }
+
+        // Almacén
+        if (state.warehouseFilter) {
+          if (String(item.warehouse || '') !== state.warehouseFilter) return false;
+        }
+
+        // Favoritos
+        if (state.showOnlyFavorites) {
+          if (!isFavorite(item.code)) return false;
+        }
+
+        // Stock bajo
+        if (state.showOnlyLowStock) {
+          const qty = Number(item.qty) || 0;
+          const minQty = Number(item.minQty) || 0;
+          if (!(minQty > 0 && qty < minQty)) return false;
+        }
+
+        // Activos
+        const status = String(item.status || 'activo').toLowerCase();
+        if (!state.showInactive) {
+          if (status !== 'activo' && status !== '') return false;
+        }
+
+        return true;
+      });
+    }
+
+    /* =====================================================
+       RECIENTES
+    ===================================================== */
+    function getRecentCodes() {
+      try { return JSON.parse(safeStorage.getItem(RECENT_KEY) || '[]'); }
+      catch { return []; }
+    }
+
+    function addRecent(code) {
+      try {
+        let r = getRecentCodes();
+        r = r.filter(c => c !== code);
+        r.unshift(code);
+        r = r.slice(0, 20);
+        safeStorage.setItem(RECENT_KEY, JSON.stringify(r));
+      } catch (e) {}
+    }
+
+    function loadRecentItems() {
+      const codes = getRecentCodes();
+      if (!codes.length) {
+        state.recentItems = [];
         return;
       }
+      const items = state.allItems.filter(it => codes.includes(String(it.code)));
+      items.sort((a, b) => codes.indexOf(String(a.code)) - codes.indexOf(String(b.code)));
+      state.recentItems = items;
+    }
 
-      console.log('🆕 Primera carga sin cache');
-      setLoading(true);
+    /* =====================================================
+       LOADING
+    ===================================================== */
+    function showLoading(text = 'Cargando catálogo...') {
+      const list = document.getElementById('list');
+      if (!list) return;
+      list.innerHTML = `
+        <div class="loading" id="loading-state">
+          <i class='bx bx-loader-circle'></i>
+          <div class="loading-text">${text}</div>
+        </div>
+      `;
+    }
+
+    function hideLoading() {
+      const el = document.getElementById('loading-state');
+      if (el) el.remove();
+    }
+
+    /* =====================================================
+       CARGA INICIAL
+    ===================================================== */
+    async function init() {
+      loadPreferences();
+      showLoading();
+
+      const hasCache = loadCatalogFromCache();
+
+      if (hasCache && state.allItems.length) {
+        loadRecentItems();
+        hideLoading();
+        renderInventory();
+      }
+
+      const needsFetch = !hasCache;
+
+      if (needsFetch) {
+        await fetchCatalog();
+      }
 
       try {
-        const data = await apiGet('getDatabase');
+        const stats = await apiGet({ action: 'getStats' });
+        if (stats) {
+          state.stats = stats;
+          const counter = document.getElementById('counter');
+          if (counter) counter.textContent = stats.totalItems + ' items';
 
-        if (data.items) db.items = data.items;
-        if (data.movs)  db.movs  = data.movs;
+          const lowBadge = document.getElementById('low-stock-badge');
+          const lowCount = document.getElementById('low-stock-count');
+          if (stats.lowStock > 0) {
+            if (lowCount) lowCount.textContent = stats.lowStock;
+            if (lowBadge) lowBadge.classList.add('show');
+          }
+        }
+      } catch (e) {
+        console.warn('Stats no disponible:', e.message);
+      }
 
-        db.items = db.items.map(i => ({ ...i, qty: Number(i.qty) || 0 }));
+      try {
+        const movs = await apiGet({ action: 'getDatabase' });
+        if (movs && movs.movs) state.movs = movs.movs;
+      } catch (e) {
+        console.warn('Movs no disponibles:', e.message);
+      }
 
-        saveCache();
-        showCacheBadge(false);
+      try {
+        const cats = await apiGet({ action: 'getCategories' });
+        if (cats && cats.categories) {
+          state.categories = cats.categories;
+          populateCategories();
+        }
+      } catch (e) {}
 
-        setLoading(false);
-        render();
-        renderMovs();
+      try {
+        const whs = await apiGet({ action: 'getWarehouses' });
+        if (whs && whs.warehouses) {
+          state.warehouses = whs.warehouses;
+          populateWarehouses();
+        }
+      } catch (e) {}
 
-      } catch (error) {
-        console.error('❌ Error:', error);
-        setLoading(false);
-
-        toast(error.message, true);
-        document.getElementById('list').innerHTML = `
-          <div style="color:#ff5555;text-align:center;padding:20px;font-size:.85rem">
-            <i class='bx bx-error-circle' style="font-size:2rem;display:block;margin-bottom:8px"></i>
-            ${error.message}
-            <br><br>
-            <button class="btn btn-in" onclick="forceRefresh()" style="max-width:200px;margin:auto">
-              <i class='bx bx-refresh'></i> Reintentar
-            </button>
-          </div>
-        `;
+      if (needsFetch) {
+        loadRecentItems();
+        hideLoading();
+        renderInventory();
       }
     }
 
-    async function syncInBackground() {
-      if (isSyncing) return;
-      isSyncing = true;
-      showSyncIndicator(true);
+    function populateCategories() {
+      const sel = document.getElementById('category-filter');
+      const dl = document.getElementById('categories-datalist');
+      if (sel) {
+        sel.innerHTML = '<option value="">Todas las categorías</option>' +
+          state.categories.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+      }
+      if (dl) {
+        dl.innerHTML = state.categories.map(c => `<option value="${esc(c)}">`).join('');
+      }
+    }
 
-      try {
-        const data = await apiGet('getDatabase');
-
-        if (data.items) db.items = data.items;
-        if (data.movs)  db.movs  = data.movs;
-
-        db.items = db.items.map(i => ({ ...i, qty: Number(i.qty) || 0 }));
-
-        saveCache();
-        showCacheBadge(false);
-
-        render();
-        renderMovs();
-
-      } catch (error) {
-        console.warn('⚠️ Sync background falló:', error.message);
-      } finally {
-        isSyncing = false;
-        showSyncIndicator(false);
+    function populateWarehouses() {
+      const sel = document.getElementById('warehouse-filter');
+      const dl = document.getElementById('warehouses-datalist');
+      if (sel) {
+        sel.innerHTML = '<option value="">Todos los almacenes</option>' +
+          state.warehouses.map(w => `<option value="${esc(w)}">${esc(w)}</option>`).join('');
+      }
+      if (dl) {
+        dl.innerHTML = state.warehouses.map(w => `<option value="${esc(w)}">`).join('');
       }
     }
 
     /* =====================================================
-       FORZAR REFRESCO
+       BÚSQUEDA
     ===================================================== */
-    function forceRefresh() {
-      localStorage.removeItem(CACHE_KEY);
-      db.items = [];
-      db.movs = [];
-      toast('Recargando datos frescos...', false);
-      loadDatabase();
+    function setupSearch() {
+      const input = document.getElementById('search');
+      const clearBtn = document.getElementById('search-clear');
+
+      if (!input || !clearBtn) return;
+
+      input.addEventListener('input', () => {
+        const q = input.value.trim();
+        clearBtn.classList.toggle('show', q.length > 0);
+        state.searchQuery = q;
+        state.currentPage = 1;
+        renderInventory();
+      });
     }
-    window.forceRefresh = forceRefresh;
+
+    function clearSearch() {
+      const input = document.getElementById('search');
+      if (!input) return;
+      input.value = '';
+      const clearBtn = document.getElementById('search-clear');
+      if (clearBtn) clearBtn.classList.remove('show');
+      state.searchQuery = '';
+      state.currentPage = 1;
+      renderInventory();
+    }
 
     /* =====================================================
-       CAMBIAR PESTAÑA
+       ORDENAMIENTO Y FILTROS
     ===================================================== */
-    function showTab(id, el) {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    function setSort(value) {
+      state.sortBy = value;
+      safeStorage.setItem(SORT_KEY, value);
+      state.currentPage = 1;
+      renderInventory();
+    }
 
-      if (el) el.classList.add('active');
-      document.getElementById('p-' + id).classList.add('active');
+    function setCategoryFilter(value) {
+      state.categoryFilter = value;
+      state.currentPage = 1;
+      renderInventory();
+    }
 
-      if (!isLoading) {
-        if (id === 'inv') render();
-        if (id === 'mov') renderMovs();
-      }
+    function setWarehouseFilter(value) {
+      state.warehouseFilter = value;
+      state.currentPage = 1;
+      renderInventory();
+    }
+
+    function toggleFavFilter() {
+      state.showOnlyFavorites = !state.showOnlyFavorites;
+      const btn = document.getElementById('fav-filter-btn');
+      if (btn) btn.classList.toggle('active', state.showOnlyFavorites);
+      state.currentPage = 1;
+      renderInventory();
+    }
+
+    function toggleLowFilter() {
+      state.showOnlyLowStock = !state.showOnlyLowStock;
+      const btn = document.getElementById('low-filter-btn');
+      if (btn) btn.classList.toggle('active', state.showOnlyLowStock);
+      state.currentPage = 1;
+      renderInventory();
+    }
+
+    function toggleShowInactive() {
+      state.showInactive = !state.showInactive;
+      const btn = document.getElementById('show-inactive-btn');
+      if (btn) btn.classList.toggle('active', state.showInactive);
+      state.currentPage = 1;
+      renderInventory();
     }
 
     /* =====================================================
        RENDER INVENTARIO
     ===================================================== */
-    function render() {
-      const q = document.getElementById('search').value.toLowerCase();
+    function renderInventory() {
       const list = document.getElementById('list');
-      list.innerHTML = '';
+      const status = document.getElementById('status');
+      const pagination = document.getElementById('pagination');
 
-      db.items
-        .filter(i =>
-          String(i.code || '').toLowerCase().includes(q) ||
-          String(i.desc || '').toLowerCase().includes(q)
-        )
-        .forEach(i => {
-          const d = document.createElement('div');
-          d.className = 'item';
-          d.innerHTML = `
-            <div class="code">
-              <i class='bx bx-cube'></i> ${i.code || ''}
-            </div>
-            <div class="desc">
-              ${i.desc || ''}
-            </div>
-            <div class="meta">
-              <span class="loc">
-                <i class='bx bx-map-pin'></i> ${i.loc || ''} · ${i.um || ''}
-              </span>
-              <span class="stock">
-                <i class='bx bx-layer'></i> ${i.qty}
-              </span>
-            </div>
-            <div class="btns">
-              <button class="btn btn-out" onclick="openModal('RETIRO', '${String(i.code).replace(/'/g, "\\'")}')">
-                <i class='bx bx-minus-circle'></i> Retirar
-              </button>
-              <button class="btn btn-in" onclick="openModal('INGRESO', '${String(i.code).replace(/'/g, "\\'")}')">
-                <i class='bx bx-plus-circle'></i> Ingresar
-              </button>
-            </div>
+      if (!list || !status) return;
+
+      // Sin búsqueda → mostrar recientes
+      if (!state.searchQuery && !state.categoryFilter && !state.warehouseFilter &&
+          !state.showOnlyFavorites && !state.showOnlyLowStock && !state.showInactive) {
+        if (state.recentItems.length) {
+          list.innerHTML = '';
+          status.innerHTML = `<i class='bx bx-time'></i> Últimos items vistos`;
+          if (pagination) pagination.style.display = 'none';
+
+          state.recentItems.forEach(i => list.appendChild(buildCard(i)));
+          return;
+        }
+
+        if (state.allItems.length) {
+          const preview = state.allItems.slice(0, 30);
+          list.innerHTML = '';
+          status.innerHTML = `
+            <i class='bx bx-grid-alt'></i>
+            Mostrando <strong>${preview.length}</strong> de ${state.allItems.length} items
+            · escribe arriba para filtrar
           `;
-          list.appendChild(d);
-        });
+          if (pagination) pagination.style.display = 'none';
 
-      if (!list.children.length) {
+          preview.forEach(i => list.appendChild(buildCard(i)));
+          return;
+        }
+
+        if (pagination) pagination.style.display = 'none';
+        status.innerHTML = `<i class='bx bx-info-circle'></i> Sin items`;
         list.innerHTML = `
-          <div style="color:var(--dim);text-align:center;padding:20px">
-            Sin resultados
+          <div class="empty">
+            <i class='bx bx-package'></i>
+            No hay items en el inventario
           </div>
         `;
+        return;
+      }
+
+      // Con filtros → aplicar
+      const filtered = filterItems(state.allItems);
+      const sorted = applySort(filtered);
+
+      const total = sorted.length;
+      const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+      if (state.currentPage > totalPages) state.currentPage = totalPages;
+
+      const start = (state.currentPage - 1) * PAGE_SIZE;
+      const pageItems = sorted.slice(start, start + PAGE_SIZE);
+
+      list.innerHTML = '';
+
+      if (total === 0) {
+        status.innerHTML = `<i class='bx bx-info-circle'></i> Sin resultados`;
+        list.innerHTML = `
+          <div class="empty">
+            <i class='bx bx-search-alt'></i>
+            No se encontraron items con los filtros aplicados
+          </div>
+        `;
+        if (pagination) pagination.style.display = 'none';
+        return;
+      }
+
+      status.innerHTML = `
+        <i class='bx bx-check-circle'></i>
+        <strong>${total}</strong> resultado${total !== 1 ? 's' : ''}
+        · mostrando ${start + 1}-${Math.min(start + PAGE_SIZE, total)}
+      `;
+
+      pageItems.forEach(i => list.appendChild(buildCard(i)));
+
+      // Paginación
+      if (totalPages > 1) {
+        renderPagination(totalPages);
+        if (pagination) pagination.style.display = 'flex';
+      } else {
+        if (pagination) pagination.style.display = 'none';
       }
     }
 
-    /* =====================================================
-       RENDER MOVIMIENTOS
-    ===================================================== */
-    function renderMovs() {
-      const t = document.getElementById('movs');
-      if (!t) return;
-      t.innerHTML = '';
+    function renderPagination(totalPages) {
+      const pagination = document.getElementById('pagination');
+      if (!pagination) return;
 
-      if (!db.movs.length) {
-        t.innerHTML = `
+      pagination.innerHTML = '';
+
+      const prev = document.createElement('button');
+      prev.innerHTML = "<i class='bx bx-chevron-left'></i>";
+      prev.disabled = state.currentPage === 1;
+      prev.onclick = () => { state.currentPage--; renderInventory(); window.scrollTo(0, 0); };
+      pagination.appendChild(prev);
+
+      // Mostrar hasta 5 páginas
+      let startPage = Math.max(1, state.currentPage - 2);
+      let endPage = Math.min(totalPages, startPage + 4);
+      if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
+
+      for (let i = startPage; i <= endPage; i++) {
+        const btn = document.createElement('button');
+        btn.textContent = i;
+        btn.classList.toggle('active', i === state.currentPage);
+        btn.onclick = () => { state.currentPage = i; renderInventory(); window.scrollTo(0, 0); };
+        pagination.appendChild(btn);
+      }
+
+      const next = document.createElement('button');
+      next.innerHTML = "<i class='bx bx-chevron-right'></i>";
+      next.disabled = state.currentPage === totalPages;
+      next.onclick = () => { state.currentPage++; renderInventory(); window.scrollTo(0, 0); };
+      pagination.appendChild(next);
+    }
+
+    function buildCard(i) {
+      const div = document.createElement('div');
+      div.className = 'item';
+
+      const code = String(i.code || '');
+      const qty = Number(i.qty) || 0;
+      const minQty = Number(i.minQty) || 0;
+      const isLow = minQty > 0 && qty < minQty;
+      const isFav = isFavorite(code);
+      const status = String(i.status || 'activo').toLowerCase();
+      const isInactive = status !== 'activo' && status !== '';
+
+      if (isLow) div.classList.add('low-stock');
+      if (isInactive) div.classList.add('inactive');
+
+      const category = String(i.category || '');
+      const warehouse = String(i.warehouse || '');
+
+      let tags = '';
+      if (category) tags += `<span class="tag cat"><i class='bx bx-category'></i> ${esc(category)}</span>`;
+      if (warehouse) tags += `<span class="tag"><i class='bx bx-buildings'></i> ${esc(warehouse)}</span>`;
+      if (isInactive) tags += `<span class="tag" style="background:rgba(255,85,85,.15);color:var(--red)"><i class='bx bx-block'></i> Baja</span>`;
+
+      div.innerHTML = `
+        <div class="code" onclick="copyCode('${esc(code)}')" title="Clic para copiar">
+          <i class='bx bx-cube'></i> ${esc(code)}
+          <div class="code-actions">
+            <button class="mini-btn ${isFav ? 'fav-active' : ''}" onclick="event.stopPropagation(); toggleFavorite('${esc(code)}')" title="${isFav ? 'Quitar favorito' : 'Añadir favorito'}">
+              <i class='bx ${isFav ? 'bxs-star' : 'bx-star'}'></i>
+            </button>
+            <button class="mini-btn" onclick="event.stopPropagation(); openHistoryModal('${esc(code)}')" title="Ver historial">
+              <i class='bx bx-history'></i>
+            </button>
+            <button class="mini-btn" onclick="event.stopPropagation(); openEditModal('${esc(code)}')" title="Editar">
+              <i class='bx bx-edit'></i>
+            </button>
+            <button class="mini-btn" onclick="event.stopPropagation(); toggleItemStatus('${esc(code)}', '${isInactive ? 'activo' : 'baja'}')" title="${isInactive ? 'Reactivar' : 'Dar de baja'}">
+              <i class='bx ${isInactive ? 'bx-recycle' : 'bx-block'}'></i>
+            </button>
+          </div>
+        </div>
+        <div class="desc">${esc(i.desc || '')}</div>
+        <div class="meta">
+          <span class="tags">
+            <span class="tag"><i class='bx bx-map-pin'></i> ${esc(i.loc || '')}</span>
+            <span class="tag">${esc(i.um || '')}</span>
+            ${tags}
+          </span>
+          <span class="stock ${isLow ? 'low' : ''}">
+            <i class='bx bx-layer'></i> ${qty}
+          </span>
+        </div>
+        <div class="actions">
+          <button class="btn btn-out" data-act="RETIRO" data-code="${esc(code)}">
+            <i class='bx bx-minus-circle'></i> Retirar
+          </button>
+          <button class="btn btn-in" data-act="INGRESO" data-code="${esc(code)}">
+            <i class='bx bx-plus-circle'></i> Ingresar
+          </button>
+        </div>
+      `;
+
+      div.querySelectorAll('button[data-act]').forEach(btn => {
+        btn.addEventListener('click', () => openModal(btn.dataset.act, btn.dataset.code));
+      });
+
+      return div;
+    }
+
+    /* =====================================================
+       COPIAR CÓDIGO
+    ===================================================== */
+    function copyCode(code) {
+      try {
+        navigator.clipboard.writeText(code).then(() => {
+          toast('📋 Copiado: ' + code, false);
+          playSound('click');
+        }).catch(() => {
+          fallbackCopy(code);
+        });
+      } catch (e) {
+        fallbackCopy(code);
+      }
+    }
+
+    function fallbackCopy(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); toast('📋 Copiado: ' + text, false); }
+      catch (e) { toast('No se pudo copiar', true); }
+      document.body.removeChild(ta);
+    }
+
+    /* =====================================================
+       TABS
+    ===================================================== */
+    function showTab(id) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+
+      const tab = document.getElementById('tab-' + id);
+      const panel = document.getElementById('p-' + id);
+      if (tab) tab.classList.add('active');
+      if (panel) panel.classList.add('active');
+
+      if (id === 'mov') renderMovs();
+      if (id === 'dash') loadDashboard();
+      playSound('click');
+    }
+
+    /* =====================================================
+       MOVIMIENTOS
+    ===================================================== */
+    function setType(type) {
+      filters.type = type;
+      document.querySelectorAll('[data-type]').forEach(c => {
+        c.classList.toggle('active', c.dataset.type === type);
+      });
+      renderMovs();
+    }
+
+    function setRange(range) {
+      filters.range = range;
+      document.querySelectorAll('[data-range]').forEach(c => {
+        c.classList.toggle('active', c.dataset.range === range);
+      });
+      renderMovs();
+    }
+
+    function parseDate(str) {
+      if (!str) return null;
+      let d = new Date(str);
+      if (!isNaN(d.getTime())) return d;
+
+      const m = String(str).match(/(\d{1,2})\/(\d{1,2})\/(\d{4})[,\s]+(\d{1,2}):(\d{2})/);
+      if (m) {
+        d = new Date(+m[3], +m[2] - 1, +m[1], +m[4], +m[5]);
+        return isNaN(d.getTime()) ? null : d;
+      }
+      return null;
+    }
+
+    function filterMovs(list) {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const week = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const month = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+      const movSearch = document.getElementById('mov-search');
+      const q = movSearch ? normStr(movSearch.value) : '';
+
+      return list.filter(m => {
+        const t = normType(pick(m, ['type', 'tipo', 'Tipo']));
+        if (filters.type !== 'ALL' && t !== filters.type) return false;
+
+        if (filters.range !== 'ALL') {
+          const d = parseDate(pick(m, ['date', 'fecha', 'Fecha']));
+          if (!d) return false;
+          if (filters.range === 'TODAY' && d < today) return false;
+          if (filters.range === 'WEEK'  && d < week)  return false;
+          if (filters.range === 'MONTH' && d < month) return false;
+        }
+
+        if (q) {
+          const code = normStr(pick(m, ['code', 'codigo', 'código']));
+          const who  = normStr(pick(m, ['who', 'quien', 'quién', 'nombre']));
+          const notes = normStr(pick(m, ['notes', 'notas', 'observaciones']));
+          const tipo = normStr(t);
+          if (!code.includes(q) && !who.includes(q) && !notes.includes(q) && !tipo.includes(q)) return false;
+        }
+
+        return true;
+      });
+    }
+
+    function renderMovs() {
+      const tbody = document.getElementById('movs');
+      const status = document.getElementById('mov-status');
+      if (!tbody) return;
+
+      tbody.innerHTML = '';
+
+      const filtered = filterMovs(state.movs);
+
+      if (status) {
+        status.innerHTML = `
+          <i class='bx bx-list-ul'></i>
+          ${filtered.length} de ${state.movs.length} movimiento${state.movs.length !== 1 ? 's' : ''}
+        `;
+      }
+
+      if (!filtered.length) {
+        tbody.innerHTML = `
           <tr>
-            <td colspan="5" style="color:var(--dim);text-align:center">
-              Sin movimientos aún
+            <td colspan="5" style="text-align:center;color:var(--dim);padding:20px">
+              ${state.movs.length ? 'Sin resultados con los filtros' : 'Sin movimientos aún'}
             </td>
           </tr>
         `;
         return;
       }
 
-      db.movs.forEach(m => {
-        const fecha   = normalizeDate(pick(m, ['date', 'fecha', 'Fecha', 'Date']));
-        const code    = pick(m, ['code', 'codigo', 'código', 'Codigo', 'Código', 'item', 'Item']);
-        const tipoRaw = pick(m, ['type', 'tipo', 'Tipo', 'Type']);
-        const tipo    = normalizeType(tipoRaw);
-        const qty     = pick(m, ['qty', 'cantidad', 'Cantidad', 'Qty', 'Quantity']);
-        const who     = pick(m, ['who', 'quien', 'quién', 'Quien', 'Quién', 'nombre', 'Nombre', 'usuario', 'Usuario']);
+      filtered.slice(0, 500).forEach(m => {
+        const fecha = normDate(pick(m, ['date', 'fecha', 'Fecha']));
+        const code  = pick(m, ['code', 'codigo', 'código']);
+        const tipo  = normType(pick(m, ['type', 'tipo', 'Tipo']));
+        const qty   = pick(m, ['qty', 'cantidad', 'Cantidad']);
+        const who   = pick(m, ['who', 'quien', 'quién', 'nombre']);
+        const notes = pick(m, ['notes', 'notas', 'observaciones']);
 
-        const isRetiro = tipo === 'RETIRO';
-        const color = isRetiro ? 'var(--red)' : 'var(--lime)';
-        const signo = isRetiro ? '−' : '+';
+        const isR = tipo === 'RETIRO';
+        const color = isR ? 'var(--red)' : 'var(--lime)';
+        const signo = isR ? '−' : '+';
 
-        t.innerHTML += `
+        tbody.innerHTML += `
           <tr>
-            <td>${fecha}</td>
-            <td>${code || '—'}</td>
-            <td style="color:${color};font-weight:bold">${tipo}</td>
+            <td>${esc(fecha)}</td>
+            <td>${esc(code || '—')}</td>
+            <td style="color:${color};font-weight:bold">${tipo}${notes ? ' <i class="bx bx-note" title="' + esc(notes) + '" style="color:var(--dim);font-size:.7rem"></i>' : ''}</td>
             <td>${signo}${qty || 0}</td>
-            <td>${who || '—'}</td>
+            <td>${esc(who || '—')}</td>
           </tr>
         `;
       });
     }
 
     /* =====================================================
-       MODAL
+       MODAL MOVIMIENTO
     ===================================================== */
     function openModal(type, code) {
       movType = type;
-      movItem = db.items.find(i => String(i.code) === String(code));
+      const all = [...state.searchResults, ...state.recentItems, ...state.allItems];
+      movItem = all.find(i => String(i.code) === String(code));
       if (!movItem) return toast('Item no encontrado', true);
+
+      addRecent(code);
 
       document.getElementById('m-code').textContent = code;
       document.getElementById('m-desc').textContent = movItem.desc;
+
+      const minQty = Number(movItem.minQty) || 0;
+      const qty = Number(movItem.qty) || 0;
+      const lowWarn = minQty > 0 && qty < minQty
+        ? ` <span style="color:var(--amber)">⚠ por debajo del mínimo (${minQty})</span>`
+        : '';
+
       document.getElementById('m-stock').innerHTML =
-        "<i class='bx bx-layer'></i> Stock actual: " + movItem.qty + ' ' + (movItem.um || '');
+        "<i class='bx bx-layer'></i> Stock actual: " + qty + ' ' + (movItem.um || '') + lowWarn;
 
       const btn = document.getElementById('m-confirm');
       btn.disabled = false;
-      btn.innerHTML = type === 'RETIRO'
-        ? "<i class='bx bx-minus-circle'></i> Confirmar retiro"
-        : "<i class='bx bx-plus-circle'></i> Confirmar ingreso";
+      btn.innerHTML = type === 'RETIRO' ? "Confirmar retiro" : "Confirmar ingreso";
       btn.className = 'btn ' + (type === 'RETIRO' ? 'btn-out' : 'btn-in');
 
       document.getElementById('m-qty').value = 1;
       document.getElementById('m-who').value = '';
+      document.getElementById('m-notes').value = '';
       document.getElementById('modal').classList.add('open');
     }
 
@@ -1340,74 +2302,101 @@
     }
 
     /* =====================================================
-       CONFIRMAR MOVIMIENTO (OPTIMISTIC UI)
+       CONFIRMAR MOVIMIENTO
     ===================================================== */
     async function confirmMov() {
       const qty = parseInt(document.getElementById('m-qty').value);
       const who = document.getElementById('m-who').value.trim();
+      const notes = document.getElementById('m-notes').value.trim();
 
-      if (!qty || qty < 1) return toast('Cantidad inválida', true);
-      if (!who) return toast('Escribe quién retira/ingresa', true);
-
+      if (!qty || qty < 1) {
+        playSound('error');
+        return toast('Cantidad inválida', true);
+      }
+      if (!who) {
+        playSound('error');
+        return toast('Escribe quién retira/ingresa', true);
+      }
       if (movType === 'RETIRO' && qty > Number(movItem.qty)) {
+        playSound('error');
         return toast('Stock insuficiente (máx ' + movItem.qty + ')', true);
       }
 
+      const movData = {
+        code: movItem.code,
+        type: movType,
+        qty: qty,
+        who: who,
+        notes: notes
+      };
+
       const prevQty = Number(movItem.qty);
-      const prevMovs = [...db.movs];
 
       // Optimistic
       movItem.qty = prevQty + (movType === 'RETIRO' ? -qty : qty);
+      addRecent(movItem.code);
 
+      const idx = state.allItems.findIndex(i => String(i.code) === String(movItem.code));
+      if (idx >= 0) state.allItems[idx].qty = movItem.qty;
+
+      const tempId = 'temp_' + Date.now();
       const newMov = {
+        _tempId: tempId,
         date: new Date().toLocaleString(),
         code: movItem.code,
         type: movType,
         qty: qty,
         who: who,
-        _pending: true
+        notes: notes,
+        _optimistic: true
       };
-      db.movs.unshift(newMov);
+      state.movs.unshift(newMov);
 
-      saveCache();
+      saveCatalogToCache();
+
       closeModal();
-      render();
+      renderInventory();
       renderMovs();
 
-      toast('✅ ' + movType + ' registrado: ' + qty + ' × ' + movItem.code, false);
+      playSound('success');
+      toast('✅ ' + movType + ': ' + qty + ' × ' + movItem.code, false);
 
       try {
-        const result = await apiPost({
-          action: 'movement',
-          code: movItem.code,
-          type: movType,
-          qty: qty,
-          who: who
-        });
+        const r = await apiPost({ action: 'movement', ...movData });
+        if (r.success === false) throw new Error(r.message || 'Error');
 
-        if (result.success === false) {
-          throw new Error(result.message || 'No se pudo registrar');
-        }
+        const found = state.movs.find(m => m._tempId === tempId);
+        if (found) found._optimistic = false;
 
-        delete newMov._pending;
-        saveCache();
-        console.log('✅ Movimiento confirmado');
-
-      } catch (error) {
-        console.error('❌ Error:', error);
-
-        movItem.qty = prevQty;
-        db.movs = prevMovs;
-        saveCache();
-        render();
+        saveCatalogToCache();
+        safeStorage.removeItem(CATALOG_KEY);
         renderMovs();
 
-        toast('❌ Error: ' + error.message, true);
+        // Alerta de stock bajo
+        if (r.warning) {
+          playSound('error');
+          toast('⚠ ' + r.warning, true);
+        }
+
+      } catch (err) {
+        console.error('Error:', err);
+
+        movItem.qty = prevQty;
+        if (idx >= 0) state.allItems[idx].qty = prevQty;
+
+        const pos = state.movs.findIndex(m => m._tempId === tempId);
+        if (pos >= 0) state.movs.splice(pos, 1);
+
+        saveCatalogToCache();
+        renderInventory();
+        renderMovs();
+        playSound('error');
+        toast('❌ Error: ' + err.message, true);
       }
     }
 
     /* =====================================================
-       AGREGAR ITEM (OPTIMISTIC UI)
+       AGREGAR ITEM
     ===================================================== */
     async function addItem() {
       const code = document.getElementById('n-code').value.trim();
@@ -1415,103 +2404,477 @@
       const loc  = document.getElementById('n-loc').value.trim();
       const um   = document.getElementById('n-um').value;
       const qty  = parseInt(document.getElementById('n-qty').value) || 0;
+      const category = document.getElementById('n-category').value.trim();
+      const warehouse = document.getElementById('n-warehouse').value.trim();
+      const minQty = parseInt(document.getElementById('n-minQty').value) || 0;
 
       if (!code || !desc || !loc) {
+        playSound('error');
         return toast('Completa código, descripción y ubicación', true);
       }
 
-      if (db.items.some(i => String(i.code) === code && String(i.loc) === loc)) {
-        return toast('Ese código ya existe en esa ubicación', true);
-      }
-
-      const prevItems = [...db.items];
-      const prevMovs = [...db.movs];
-
-      const newItem = { code, desc, loc, um, qty };
-      db.items.push(newItem);
-
-      if (qty > 0) {
-        db.movs.unshift({
-          date: new Date().toLocaleString(),
-          code,
-          type: 'INGRESO',
-          qty,
-          who: 'Registro inicial',
-          _pending: true
-        });
-      }
-
-      saveCache();
-
-      ['n-code', 'n-desc', 'n-loc'].forEach(id => {
-        document.getElementById(id).value = '';
-      });
-      document.getElementById('n-qty').value = '';
-
-      showTab('inv', document.getElementById('tab-inv'));
-      render();
-      renderMovs();
-
-      toast('✅ Item registrado: ' + code, false);
+      const btn = document.getElementById('btn-save');
+      const originalHTML = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = "<i class='bx bx-loader-circle bx-spin'></i> Guardando...";
 
       try {
-        const result = await apiPost({
+        const r = await apiPost({
           action: 'addItem',
-          code, desc, loc, um, qty
+          code, desc, loc, um, qty,
+          category, warehouse, minQty
         });
 
-        if (result.success === false) {
-          throw new Error(result.message || 'No se pudo registrar');
+        if (r.success === false) throw new Error(r.message || 'Error');
+
+        const newItem = { code, desc, loc, um, qty, category, warehouse, minQty, status: 'activo' };
+        state.allItems.unshift(newItem);
+        saveCatalogToCache();
+
+        playSound('success');
+        toast('✅ Item registrado: ' + code, false);
+
+        ['n-code', 'n-desc', 'n-loc', 'n-category', 'n-warehouse'].forEach(id => {
+          document.getElementById(id).value = '';
+        });
+        document.getElementById('n-qty').value = '';
+        document.getElementById('n-minQty').value = '';
+
+        addRecent(code);
+
+        showTab('inv');
+        document.getElementById('search').value = code;
+        document.getElementById('search-clear').classList.add('show');
+        state.searchQuery = code;
+        state.currentPage = 1;
+        renderInventory();
+
+        const s = await apiGet({ action: 'getStats' });
+        if (s && s.totalItems !== undefined) {
+          const counter = document.getElementById('counter');
+          if (counter) counter.textContent = s.totalItems + ' items';
         }
 
-        console.log('✅ Item confirmado');
+        safeStorage.removeItem(CATALOG_KEY);
 
-      } catch (error) {
-        console.error('❌ Error:', error);
-
-        db.items = prevItems;
-        db.movs = prevMovs;
-        saveCache();
-        render();
-        renderMovs();
-
-        toast('❌ Error: ' + error.message, true);
+      } catch (e) {
+        playSound('error');
+        toast('❌ ' + e.message, true);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
       }
     }
 
     /* =====================================================
-       EXPORTAR A EXCEL
+       EDITAR ITEM
     ===================================================== */
-    function exportData() {
-      if (!db.movs.length) {
-        return toast('No hay movimientos para exportar', true);
+    function openEditModal(code) {
+      const item = state.allItems.find(i => String(i.code) === String(code));
+      if (!item) return toast('Item no encontrado', true);
+
+      editItemOriginalCode = code;
+
+      document.getElementById('e-code').value = item.code || '';
+      document.getElementById('e-desc').value = item.desc || '';
+      document.getElementById('e-loc').value = item.loc || '';
+      document.getElementById('e-um').value = item.um || 'UND';
+      document.getElementById('e-category').value = item.category || '';
+      document.getElementById('e-warehouse').value = item.warehouse || '';
+      document.getElementById('e-minQty').value = item.minQty || 0;
+
+      document.getElementById('edit-modal').classList.add('open');
+    }
+
+    function closeEditModal() {
+      document.getElementById('edit-modal').classList.remove('open');
+      editItemOriginalCode = null;
+    }
+
+    async function saveEditItem() {
+      const code = document.getElementById('e-code').value.trim();
+      const desc = document.getElementById('e-desc').value.trim();
+      const loc  = document.getElementById('e-loc').value.trim();
+      const um   = document.getElementById('e-um').value;
+      const category = document.getElementById('e-category').value.trim();
+      const warehouse = document.getElementById('e-warehouse').value.trim();
+      const minQty = parseInt(document.getElementById('e-minQty').value) || 0;
+
+      if (!code || !desc || !loc) {
+        playSound('error');
+        return toast('Completa todos los campos', true);
       }
 
-      const movimientos = db.movs.map(m => ({
-        'Fecha':    normalizeDate(pick(m, ['date', 'fecha', 'Fecha', 'Date'])),
-        'Código':   pick(m, ['code', 'codigo', 'código', 'Codigo']),
-        'Tipo':     normalizeType(pick(m, ['type', 'tipo', 'Tipo'])),
-        'Cantidad': pick(m, ['qty', 'cantidad', 'Cantidad', 'Qty']),
-        'Quién':    pick(m, ['who', 'quien', 'quién', 'Quien', 'nombre', 'Usuario'])
+      try {
+        const r = await apiPost({
+          action: 'editItem',
+          originalCode: editItemOriginalCode,
+          code, desc, loc, um, category, warehouse, minQty
+        });
+
+        if (r.success === false) throw new Error(r.message || 'Error');
+
+        const idx = state.allItems.findIndex(i => String(i.code) === String(editItemOriginalCode));
+        if (idx >= 0) {
+          state.allItems[idx] = {
+            ...state.allItems[idx],
+            code, desc, loc, um, category, warehouse, minQty
+          };
+        }
+
+        saveCatalogToCache();
+        safeStorage.removeItem(CATALOG_KEY);
+
+        playSound('success');
+        toast('✅ Item actualizado', false);
+        closeEditModal();
+        renderInventory();
+
+      } catch (e) {
+        playSound('error');
+        toast('❌ ' + e.message, true);
+      }
+    }
+
+    /* =====================================================
+       DAR DE BAJA / REACTIVAR
+    ===================================================== */
+    async function toggleItemStatus(code, newStatus) {
+      const action = newStatus === 'baja' ? 'dar de baja' : 'reactivar';
+      if (!confirm('¿Estás seguro de ' + action + ' el item ' + code + '?')) return;
+
+      try {
+        const r = await apiPost({
+          action: 'toggleStatus',
+          code: code,
+          status: newStatus
+        });
+
+        if (r.success === false) throw new Error(r.message || 'Error');
+
+        const idx = state.allItems.findIndex(i => String(i.code) === String(code));
+        if (idx >= 0) {
+          state.allItems[idx].status = newStatus;
+        }
+
+        saveCatalogToCache();
+        safeStorage.removeItem(CATALOG_KEY);
+
+        playSound('success');
+        toast('✅ ' + r.message, false);
+        renderInventory();
+
+      } catch (e) {
+        playSound('error');
+        toast('❌ ' + e.message, true);
+      }
+    }
+
+    /* =====================================================
+       HISTORIAL POR ITEM
+    ===================================================== */
+    async function openHistoryModal(code) {
+      const item = state.allItems.find(i => String(i.code) === String(code));
+      if (!item) return toast('Item no encontrado', true);
+
+      document.getElementById('hist-subtitle').textContent = code + ' · ' + (item.desc || '');
+      const content = document.getElementById('hist-content');
+      content.innerHTML = '<div class="loading"><i class="bx bx-loader-circle"></i><div>Cargando historial...</div></div>';
+
+      document.getElementById('history-modal').classList.add('open');
+
+      try {
+        const data = await apiGet({ action: 'getItemHistory', code: code });
+        const movs = (data.movs || []).slice(0, 50);
+
+        if (!movs.length) {
+          content.innerHTML = '<div style="text-align:center;padding:20px;color:var(--dim);font-size:.8rem">Sin movimientos registrados</div>';
+          return;
+        }
+
+        content.innerHTML = movs.map(m => {
+          const tipo = normType(pick(m, ['type', 'tipo', 'Tipo']));
+          const isR = tipo === 'RETIRO';
+          const fecha = normDate(pick(m, ['date', 'fecha', 'Fecha']));
+          const qty = pick(m, ['qty', 'cantidad', 'Cantidad']);
+          const who = pick(m, ['who', 'quien', 'quién', 'nombre']);
+          const notes = pick(m, ['notes', 'notas', 'observaciones']);
+
+          return `
+            <div class="hist-item">
+              <div class="h-head">
+                <span class="h-type ${isR ? 'retiro' : 'ingreso'}">${tipo}</span>
+                <span style="font-weight:700;color:${isR ? 'var(--red)' : 'var(--lime)'}">
+                  ${isR ? '−' : '+'}${qty}
+                </span>
+              </div>
+              <div class="h-meta">
+                <span>${esc(fecha)}</span>
+                <span>${esc(who || '—')}</span>
+              </div>
+              ${notes ? `<div class="h-notes">📝 ${esc(notes)}</div>` : ''}
+            </div>
+          `;
+        }).join('');
+
+      } catch (e) {
+        content.innerHTML = `<div style="text-align:center;padding:20px;color:var(--red);font-size:.8rem">Error: ${esc(e.message)}</div>`;
+      }
+    }
+
+    function closeHistoryModal() {
+      document.getElementById('history-modal').classList.remove('open');
+    }
+
+    /* =====================================================
+       STOCK BAJO
+    ===================================================== */
+    function showLowStock() {
+      const content = document.getElementById('lowstock-content');
+
+      const lowItems = state.allItems.filter(i => {
+        const status = String(i.status || 'activo').toLowerCase();
+        if (status !== 'activo' && status !== '') return false;
+        const qty = Number(i.qty) || 0;
+        const minQty = Number(i.minQty) || 0;
+        return minQty > 0 && qty < minQty;
+      });
+
+      if (!lowItems.length) {
+        content.innerHTML = '<div style="text-align:center;padding:20px;color:var(--dim);font-size:.8rem">Ningún item por debajo del mínimo</div>';
+      } else {
+        content.innerHTML = lowItems.map(i => `
+          <div class="hist-item">
+            <div class="h-head">
+              <span style="color:var(--lime);font-weight:700">${esc(i.code)}</span>
+              <span style="color:var(--amber);font-weight:700">
+                ${Number(i.qty) || 0} / ${Number(i.minQty) || 0}
+              </span>
+            </div>
+            <div class="h-meta">
+              <span>${esc(i.desc)}</span>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      document.getElementById('lowstock-modal').classList.add('open');
+    }
+
+    function closeLowStockModal() {
+      document.getElementById('lowstock-modal').classList.remove('open');
+    }
+
+    /* =====================================================
+       DASHBOARD
+    ===================================================== */
+    async function loadDashboard() {
+      const content = document.getElementById('dashboard-content');
+      content.innerHTML = '<div class="loading"><i class="bx bx-loader-circle"></i><div>Cargando dashboard...</div></div>';
+
+      try {
+        const d = await apiGet({ action: 'getDashboard' });
+
+        content.innerHTML = `
+          <div class="stats-grid">
+            <div class="stat-card">
+              <span class="label">Total items</span>
+              <span class="value lime">${d.totalItems}</span>
+              <span class="hint">${d.activeItems} activos</span>
+            </div>
+            <div class="stat-card">
+              <span class="label">Stock total</span>
+              <span class="value blue">${d.totalStock}</span>
+              <span class="hint">unidades sumadas</span>
+            </div>
+            <div class="stat-card">
+              <span class="label">Stock bajo</span>
+              <span class="value amber">${d.lowStockCount}</span>
+              <span class="hint">por debajo del mínimo</span>
+            </div>
+            <div class="stat-card">
+              <span class="label">Items dados de baja</span>
+              <span class="value red">${d.inactiveItems}</span>
+              <span class="hint">no activos</span>
+            </div>
+          </div>
+
+          <div class="dash-section">
+            <h3><i class='bx bx-trending-up'></i> Últimos 7 días</h3>
+            <div class="stats-grid" style="margin-bottom:0">
+              <div class="stat-card">
+                <span class="label">Retiros</span>
+                <span class="value red">${d.retirosCount}</span>
+              </div>
+              <div class="stat-card">
+                <span class="label">Ingresos</span>
+                <span class="value lime">${d.ingresosCount}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="dash-section">
+            <h3><i class='bx bx-bar-chart'></i> Top 5 con más movimiento</h3>
+            <div class="dash-list">
+              ${d.topItems && d.topItems.length
+                ? d.topItems.map(t => `
+                    <div class="dash-item">
+                      <span class="name">${esc(t.code)} · ${esc(t.desc || '')}</span>
+                      <span class="count">${t.movements}</span>
+                    </div>
+                  `).join('')
+                : '<div style="text-align:center;color:var(--dim);font-size:.78rem;padding:10px">Sin datos</div>'}
+            </div>
+          </div>
+
+          <div class="dash-section">
+            <h3><i class='bx bx-time'></i> Sin movimiento en 30 días</h3>
+            <div class="dash-list">
+              ${d.inactiveItems30List && d.inactiveItems30List.length
+                ? d.inactiveItems30List.map(i => `
+                    <div class="dash-item">
+                      <span class="name">${esc(i.code)} · ${esc(i.desc || '')}</span>
+                      <span class="count" style="color:var(--dim)">${Number(i.qty) || 0} u.</span>
+                    </div>
+                  `).join('') +
+                  (d.inactiveItems30 > 10 ? `<div style="text-align:center;color:var(--dim);font-size:.72rem;padding:6px">+${d.inactiveItems30 - 10} más...</div>` : '')
+                : '<div style="text-align:center;color:var(--dim);font-size:.78rem;padding:10px">Sin datos</div>'}
+            </div>
+          </div>
+
+          <button class="btn btn-neutral" style="width:100%;margin-top:8px" onclick="loadDashboard()">
+            <i class='bx bx-refresh'></i> Recargar dashboard
+          </button>
+        `;
+
+      } catch (e) {
+        content.innerHTML = `<div class="loading" style="color:var(--red)"><i class="bx bx-error-circle"></i><div>Error: ${esc(e.message)}</div></div>`;
+      }
+    }
+
+    /* =====================================================
+       EXPORTAR
+    ===================================================== */
+    function exportInventory() {
+      if (!state.allItems.length) return toast('No hay items para exportar', true);
+
+      const rows = state.allItems.map(i => ({
+        'Código': i.code || '',
+        'Descripción': i.desc || '',
+        'Ubicación': i.loc || '',
+        'Unidad': i.um || '',
+        'Cantidad': Number(i.qty) || 0,
+        'Categoría': i.category || '',
+        'Stock Mínimo': Number(i.minQty) || 0,
+        'Almacén': i.warehouse || '',
+        'Estado': i.status || 'activo'
       }));
 
       const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.json_to_sheet(movimientos);
-
+      const ws = XLSX.utils.json_to_sheet(rows);
       ws['!cols'] = [
-        { wch: 22 }, { wch: 18 }, { wch: 15 }, { wch: 12 }, { wch: 25 }
+        { wch: 18 }, { wch: 40 }, { wch: 14 }, { wch: 8 }, { wch: 10 },
+        { wch: 18 }, { wch: 12 }, { wch: 14 }, { wch: 10 }
       ];
-      ws['!autofilter'] = { ref: 'A1:E' + (movimientos.length + 1) };
+      XLSX.utils.book_append_sheet(wb, ws, 'Inventario');
 
+      const fecha = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(wb, 'inventario_' + fecha + '.xlsx');
+      playSound('success');
+      toast('✅ Inventario exportado', false);
+    }
+
+    function exportData() {
+      const filtered = filterMovs(state.movs);
+      if (!filtered.length) return toast('No hay movimientos', true);
+
+      const rows = filtered.map(m => ({
+        'Fecha': normDate(pick(m, ['date', 'fecha', 'Fecha'])),
+        'Código': pick(m, ['code', 'codigo', 'código']),
+        'Tipo': normType(pick(m, ['type', 'tipo', 'Tipo'])),
+        'Cantidad': pick(m, ['qty', 'cantidad', 'Cantidad']),
+        'Quién': pick(m, ['who', 'quien', 'quién', 'nombre']),
+        'Observaciones': pick(m, ['notes', 'notas', 'observaciones'])
+      }));
+
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(rows);
+      ws['!cols'] = [{ wch: 22 }, { wch: 18 }, { wch: 12 }, { wch: 10 }, { wch: 20 }, { wch: 30 }];
       XLSX.utils.book_append_sheet(wb, ws, 'Movimientos');
 
-      const ahora = new Date();
-      const fecha = ahora.toISOString().slice(0, 10);
-      const hora = ahora.toTimeString().slice(0, 8).replace(/:/g, '-');
+      const fecha = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(wb, 'movimientos_' + fecha + '.xlsx');
+      playSound('success');
+      toast('✅ Movimientos exportados', false);
+    }
 
-      XLSX.writeFile(wb, 'movimientos_almacen_' + fecha + '_' + hora + '.xlsx');
+    function exportFullBackup() {
+      if (!state.allItems.length && !state.movs.length) {
+        return toast('No hay datos para respaldar', true);
+      }
 
-      toast('Movimientos exportados correctamente', false);
+      const itemsRows = state.allItems.map(i => ({
+        'Código': i.code || '',
+        'Descripción': i.desc || '',
+        'Ubicación': i.loc || '',
+        'Unidad': i.um || '',
+        'Cantidad': Number(i.qty) || 0,
+        'Categoría': i.category || '',
+        'Stock Mínimo': Number(i.minQty) || 0,
+        'Almacén': i.warehouse || '',
+        'Estado': i.status || 'activo'
+      }));
+
+      const movsRows = state.movs.map(m => ({
+        'Fecha': normDate(pick(m, ['date', 'fecha', 'Fecha'])),
+        'Código': pick(m, ['code', 'codigo', 'código']),
+        'Tipo': normType(pick(m, ['type', 'tipo', 'Tipo'])),
+        'Cantidad': pick(m, ['qty', 'cantidad', 'Cantidad']),
+        'Quién': pick(m, ['who', 'quien', 'quién', 'nombre']),
+        'Observaciones': pick(m, ['notes', 'notas', 'observaciones'])
+      }));
+
+      const wb = XLSX.utils.book_new();
+
+      const ws1 = XLSX.utils.json_to_sheet(itemsRows);
+      ws1['!cols'] = [
+        { wch: 18 }, { wch: 40 }, { wch: 14 }, { wch: 8 }, { wch: 10 },
+        { wch: 18 }, { wch: 12 }, { wch: 14 }, { wch: 10 }
+      ];
+      XLSX.utils.book_append_sheet(wb, ws1, 'Items');
+
+      const ws2 = XLSX.utils.json_to_sheet(movsRows);
+      ws2['!cols'] = [{ wch: 22 }, { wch: 18 }, { wch: 12 }, { wch: 10 }, { wch: 20 }, { wch: 30 }];
+      XLSX.utils.book_append_sheet(wb, ws2, 'Movimientos');
+
+      const fecha = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(wb, 'backup_inventario_' + fecha + '.xlsx');
+      playSound('success');
+      toast('✅ Backup completo generado', false);
+    }
+
+    /* =====================================================
+       REFRESH
+    ===================================================== */
+    async function refresh() {
+      safeStorage.removeItem(RECENT_KEY);
+      safeStorage.removeItem(CATALOG_KEY);
+      state.allItems = [];
+      state.movs = [];
+      state.recentItems = [];
+      state.searchResults = [];
+      state.searchQuery = '';
+      state.searchOffset = 0;
+      state.currentPage = 1;
+
+      const searchEl = document.getElementById('search');
+      const clearBtn = document.getElementById('search-clear');
+      if (searchEl) searchEl.value = '';
+      if (clearBtn) clearBtn.classList.remove('show');
+
+      playSound('click');
+      toast('Actualizando...', false);
+      await init();
     }
 
     /* =====================================================
@@ -1519,17 +2882,121 @@
     ===================================================== */
     function toast(msg, warn) {
       const t = document.getElementById('toast');
+      if (!t) return;
       t.innerHTML = "<i class='bx " + (warn ? 'bx-error-circle' : 'bx-check-circle') + "'></i> " + msg;
-      t.className = 'toast' + (warn ? ' warn' : '');
-      t.style.display = 'flex';
-
-      setTimeout(() => { t.style.display = 'none'; }, 3500);
+      t.className = 'toast' + (warn ? ' warn' : '') + ' show';
+      setTimeout(() => t.classList.remove('show'), 3000);
     }
 
     /* =====================================================
-       INICIAR
+       ATAJOS DE TECLADO
     ===================================================== */
-    loadDatabase();
+    function setupKeyboardShortcuts() {
+      document.addEventListener('keydown', (e) => {
+        // Esc → cerrar modales
+        if (e.key === 'Escape') {
+          closeModal();
+          closeEditModal();
+          closeHistoryModal();
+          closeLowStockModal();
+          closeShortcutsModal();
+        }
+
+        // Ctrl+K → foco en búsqueda
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+          e.preventDefault();
+          const searchInput = document.getElementById('search');
+          if (searchInput) {
+            showTab('inv');
+            setTimeout(() => searchInput.focus(), 50);
+          }
+        }
+
+        // Ctrl+1 → inventario
+        if ((e.ctrlKey || e.metaKey) && e.key === '1') {
+          e.preventDefault();
+          showTab('inv');
+        }
+
+        // Ctrl+2 → movimientos
+        if ((e.ctrlKey || e.metaKey) && e.key === '2') {
+          e.preventDefault();
+          showTab('mov');
+        }
+
+        // Ctrl+3 → dashboard
+        if ((e.ctrlKey || e.metaKey) && e.key === '3') {
+          e.preventDefault();
+          showTab('dash');
+        }
+      });
+    }
+
+    function showShortcutsHelp() {
+      document.getElementById('shortcuts-modal').classList.add('open');
+    }
+
+    function closeShortcutsModal() {
+      document.getElementById('shortcuts-modal').classList.remove('open');
+    }
+
+    /* =====================================================
+       ARRANQUE
+    ===================================================== */
+    function startApp() {
+      const searchInput = document.getElementById('search');
+      if (!searchInput) {
+        setTimeout(startApp, 100);
+        return;
+      }
+
+      console.log('✅ App v3.0 iniciada');
+
+      setupSearch();
+      setupKeyboardShortcuts();
+      init();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', startApp);
+    } else {
+      startApp();
+    }
+
+    /* Exponer al scope global */
+    window.showTab = showTab;
+    window.clearSearch = clearSearch;
+    window.setSort = setSort;
+    window.setCategoryFilter = setCategoryFilter;
+    window.setWarehouseFilter = setWarehouseFilter;
+    window.toggleFavFilter = toggleFavFilter;
+    window.toggleLowFilter = toggleLowFilter;
+    window.toggleShowInactive = toggleShowInactive;
+    window.toggleFavorite = toggleFavorite;
+    window.copyCode = copyCode;
+    window.openModal = openModal;
+    window.closeModal = closeModal;
+    window.confirmMov = confirmMov;
+    window.addItem = addItem;
+    window.openEditModal = openEditModal;
+    window.closeEditModal = closeEditModal;
+    window.saveEditItem = saveEditItem;
+    window.toggleItemStatus = toggleItemStatus;
+    window.openHistoryModal = openHistoryModal;
+    window.closeHistoryModal = closeHistoryModal;
+    window.showLowStock = showLowStock;
+    window.closeLowStockModal = closeLowStockModal;
+    window.showShortcutsHelp = showShortcutsHelp;
+    window.closeShortcutsModal = closeShortcutsModal;
+    window.toggleTheme = toggleTheme;
+    window.toggleCompact = toggleCompact;
+    window.exportInventory = exportInventory;
+    window.exportData = exportData;
+    window.exportFullBackup = exportFullBackup;
+    window.refresh = refresh;
+    window.setType = setType;
+    window.setRange = setRange;
+    window.renderMovs = renderMovs;
   </script>
 </body>
 </html>
